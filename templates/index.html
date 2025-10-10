@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Lista książek</h2>
+
+<form action="{{ url_for('add') }}" method="POST">
+    <input type="text" name="title" placeholder="Tytuł" required>
+    <input type="text" name="author" placeholder="Autor">
+    <input type="text" name="category" placeholder="Kategoria">
+    <button type="submit">Dodaj książkę</button>
+</form>
+
+<table>
+    <tr>
+        <th>ID</th>
+        <th>Tytuł</th>
+        <th>Autor</th>
+        <th>Kategoria</th>
+        <th>Status</th>
+        <th>Ocena</th>
+        <th>Recenzja</th>
+        <th>Akcje</th>
+    </tr>
+    {% for book in books %}
+    <tr>
+        <td>{{ book['id'] }}</td>
+        <td>{{ book['title'] }}</td>
+        <td>{{ book['author'] }}</td>
+        <td>{{ book['category'] }}</td>
+        <td>{{ book['status'] }}</td>
+        <td>{{ book['rating'] or '' }}</td>
+        <td>{{ book['review'] or '' }}</td>
+        <td>
+            <!-- przycisk do usuwania książki -->
+            <a href="{{ url_for('delete', book_id=book['id']) }}">❌</a>
+
+            <!-- formularz oznaczenia książki jako przeczytanej -->
+            {% if book['status'] != 'Read' %}
+            <form action="{{ url_for('complete', book_id=book['id']) }}" method="POST" style="display:inline;">
+                <input type="number" name="rating" min="1" max="10" placeholder="Ocena">
+                <input type="text" name="review" placeholder="Recenzja">
+                <button type="submit">✅</button>
+            </form>
+            {% endif %}
+        </td>
+    </tr>
+    {% endfor %}
+</table>
+{% endblock %}
