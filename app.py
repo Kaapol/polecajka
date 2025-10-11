@@ -9,15 +9,27 @@ app = Flask(__name__)
 
 DB_NAME = "books.db"
 
-
-def get_books():
+def get_connection():
     conn = sqlite3.connect(DB_NAME)
     conn.row_factory = sqlite3.Row
+    conn.execute("PRAGMA foreign_keys = ON")  # 🔥 włącza klucze obce
+    return conn
+
+
+def get_books():
+    conn = get_connection()
     cur = conn.cursor()
-    cur.execute("SELECT * FROM books ORDER BY date_added DESC")
+    cur.execute("""
+        SELECT b.id, b.title, b.author, b.category, b.status,
+               r.rating, r.review
+        FROM books b
+        LEFT JOIN reviews r ON b.id = r.book_id
+        ORDER BY b.date_added DESC
+    """)
     books = cur.fetchall()
     conn.close()
     return books
+
 
 
 @app.route("/")
