@@ -21,29 +21,58 @@
         <th>Recenzja</th>
         <th>Akcje</th>
     </tr>
+
     {% for book in books %}
     <tr>
         <td>{{ book['id'] }}</td>
-        <td>{{ book['title'] }}</td>
+        <td>
+            {{ book['title'] }}
+        </td>
         <td>{{ book['author'] }}</td>
         <td>{{ book['category'] }}</td>
         <td>{{ book['status'] }}</td>
         <td>{{ book['rating'] or '' }}</td>
         <td>{{ book['review'] or '' }}</td>
         <td>
-            <!-- przycisk do usuwania książki -->
+            <button type="button" onclick="toggleComplete({{ book['id'] }})">✅</button>
+
+            <!-- 🔹 przycisk do pokazania/ukrycia edycji -->
+            <button type="button" onclick="toggleEdit({{ book['id'] }})">✏️</button>
+
             <a href="{{ url_for('delete', book_id=book['id']) }}">❌</a>
 
-            <!-- formularz oznaczenia książki jako przeczytanej -->
-            {% if book['status'] != 'Read' %}
-            <form action="{{ url_for('complete', book_id=book['id']) }}" method="POST" style="display:inline;">
-                <input type="number" name="rating" min="1" max="10" placeholder="Ocena">
-                <input type="text" name="review" placeholder="Recenzja">
-                <button type="submit">✅</button>
-            </form>
-            {% endif %}
+            <div id="complete-{{ book['id'] }}" style="display:none;">
+                <form action="{{ url_for('complete', book_id=book['id']) }}" method="POST">
+                    <input type="number" name="rating" min="1" max="10" placeholder="Rating" required>
+                    <input type="text" name="review" placeholder="Review">
+                    <button type="submit">Save</button>
+                </form>
+            </div>
+
+            <!-- 🔹 ukryty formularz edycji -->
+            <div id="edit-{{ book['id'] }}" style="display: none;">
+                <form action="{{ url_for('edit', book_id=book['id']) }}" method="POST">
+                    <input type="text" name="title" placeholder="New title">
+                    <input type="text" name="author" placeholder="New author">
+                    <input type="text" name="category" placeholder="New category">
+                    <button type="submit">Save</button>
+                </form>
+            </div>
         </td>
     </tr>
     {% endfor %}
 </table>
+
+<script>
+function toggleEdit(bookId) {
+    const form = document.getElementById(`edit-${bookId}`);
+    form.style.display = (form.style.display === 'none' || form.style.display === '') ? 'block' : 'none';
+}
+
+function toggleComplete(bookId) {
+    const form = document.getElementById(`complete-${bookId}`);
+    form.style.display = (form.style.display === 'none' || form.style.display === '') ? 'block' : 'none';
+}
+</script>
+
 {% endblock %}

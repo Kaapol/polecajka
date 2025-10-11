@@ -60,6 +60,21 @@ def complete(book_id):
     complete_book(book_id, rating, review)
     return redirect(url_for("index"))
 
+@app.route("/edit/<int:book_id>", methods=["POST"])
+def edit(book_id):
+    title = request.form["title"].strip()
+    author = request.form["author"].strip()
+    category = request.form["category"].strip()
+
+    # Puste stringi zamień na None, żeby edit_book je pominął
+    title = title if title else None
+    author = author if author else None
+    category = category if category else None
+
+    edit_book(book_id, title, author, category)
+    return redirect(url_for("index"))
+
+
 
 if __name__ == "__main__":
     app.run(debug=False)
