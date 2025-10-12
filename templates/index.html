@@ -10,60 +10,36 @@
     <button type="submit">Dodaj książkę</button>
 </form>
 
-<table>
-    <tr>
-        <th>ID</th>
-        <th>Tytuł</th>
-        <th>Autor</th>
-        <th>Kategoria</th>
-        <th>Status</th>
-        <th>Ocena</th>
-        <th>Recenzja</th>
-        <th>Akcje</th>
-    </tr>
+<table id="books-table" class="display">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Tytuł</th>
+            <th>Autor</th>
+            <th>Kategoria</th>
+            <th>Status</th>
+            <th>Ocena</th>
+            <th>Recenzja</th>
+        </tr>
+    </thead>
 
-    {% for book in books %}
-    <tr>
-        <td>{{ book['id'] }}</td>
-        <td>
-            {{ book['title'] }}
-        </td>
-        <td>{{ book['author'] }}</td>
-        <td>{{ book['category'] }}</td>
-        <td>{{ book['status'] }}</td>
-        <td>{{ book['rating'] or '' }}</td>
-        <td>{{ book['review'] or '' }}</td>
-        <td>
-            <button type="button" onclick="toggleComplete({{ book['id'] }})">✅</button>
-
-            <!-- 🔹 przycisk do pokazania/ukrycia edycji -->
-            <button type="button" onclick="toggleEdit({{ book['id'] }})">✏️</button>
-
-            <a href="{{ url_for('delete', book_id=book['id']) }}">❌</a>
-
-            <div id="complete-{{ book['id'] }}" style="display:none;">
-                <form action="{{ url_for('complete', book_id=book['id']) }}" method="POST">
-                    <input type="number" name="rating" min="1" max="10" placeholder="Rating" required>
-                    <input type="text" name="review" placeholder="Review">
-                    <button type="submit">Save</button>
-                </form>
-            </div>
-
-            <!-- 🔹 ukryty formularz edycji -->
-            <div id="edit-{{ book['id'] }}" style="display: none;">
-                <form action="{{ url_for('edit', book_id=book['id']) }}" method="POST">
-                    <input type="text" name="title" placeholder="New title">
-                    <input type="text" name="author" placeholder="New author">
-                    <input type="text" name="category" placeholder="New category">
-                    <button type="submit">Save</button>
-                </form>
-            </div>
-        </td>
-    </tr>
-    {% endfor %}
+    <tbody>
+        {% for book in books %}
+            <tr data-id="{{ book['id'] }}">
+                <td>{{ book['id'] }}</td>
+                <td>{{ book['title'] }}</td>
+                <td>{{ book['author'] }}</td>
+                <td>{{ book['category'] }}</td>
+                <td>{{ book['status'] }}</td>
+                <td>{{ book['rating'] or '' }}</td>
+                <td>{{ book['review'] or '' }}</td>
+            </tr>
+        {% endfor %}
+    </tbody>
 </table>
 
 <script>
+
 function toggleEdit(bookId) {
     const form = document.getElementById(`edit-${bookId}`);
     form.style.display = (form.style.display === 'none' || form.style.display === '') ? 'block' : 'none';
@@ -73,6 +49,25 @@ function toggleComplete(bookId) {
     const form = document.getElementById(`complete-${bookId}`);
     form.style.display = (form.style.display === 'none' || form.style.display === '') ? 'block' : 'none';
 }
+
+
+$(document).ready(function() {
+    $('#books-table').DataTable({
+        paging: true,
+        searching: true,
+        ordering: true,
+        columnDefs:[{orderable: false, targets: -1}],
+        language: {},
+        pageLength: 10,
+        rowCallback: function(row, data) {
+        $(row).css('cursor', 'pointer');
+        $(row).off('click').on('click', function() {
+            const bookId = $(row).data('id');
+            window.location.href = `/book/${bookId}`;
+        });
+    }
+    });
+});
 </script>
 
 {% endblock %}

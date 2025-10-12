@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h2>{{ book['title'] }}</h2>
+<p>Autor: {{ book['author'] }}</p>
+<p>Kategoria: {{ book['category'] }}</p>
+<p>Added: {{ book['date_added'] }}</p>
+<p>Status: {{ book['status'] }}</p>
+
+<!--show date when completed if status completed-->
+{% if book['status'] == 'Completed' %}
+<p>Completed: {{ book['date_finished'] }}</p>
+{% endif %}
+
+<p>Ocena: {{ book['rating'] or '' }}</p>
+<p>Recenzja: {{ book['review'] or '' }}</p>
+
+<h3>Edytuj książkę</h3>
+<form action="{{ url_for('edit_book_route', book_id=book['id']) }}" method="POST">
+    <input type="text" name="title" value="{{ book['title'] }}">
+    <input type="text" name="author" value="{{ book['author'] }}">
+    <input type="text" name="category" value="{{ book['category'] }}">
+    <button type="submit">Zapisz</button>
+</form>
+
+<form action="{{ url_for('complete', book_id=book['id']) }}" method="POST">
+    <input type="number" name="rating" min="1" max="10" placeholder="Ocena" required>
+    <input type="text" name="review" placeholder="Recenzja">
+    <button type="submit">Dodaj recenzję</button>
+</form>
+
+<form id="deleteForm" action="{{ url_for('delete', book_id=book['id']) }}" method="POST">
+    <button type="button" onclick="confirmDelete('{{ book['title'] }}', '{{ book['author'] }}')">Delete a book</button>
+</form>
+
+<!--back to main menu-->
+<a href="{{ url_for('index') }}">
+    <button type="button">⬅️Back to List</button>
+</a>
+
+<script>
+    function confirmDelete(title, author) {
+        const confirmed = confirm(`Are you sure you want to delete "${title}" - ${author}`);
+        if (confirmed) {
+            document.getElementById('deleteForm').submit();
+        }
+    }
+</script>
+
+
+{% endblock %}
