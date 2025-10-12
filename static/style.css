@@ -1,30 +1,518 @@
+/* === RESET === */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* === BODY === */
 body {
-    font-family: Arial, sans-serif;
-    background: #f2f2f2;
-    padding: 20px;
+    font-family: 'Segoe UI', Roboto, sans-serif;
+    background: #f9f9fb;
+    color: #222;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
 }
 
-header {
+/* === NAVBAR === */
+nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #ffffffcc;
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+    padding: 15px 40px;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
+}
+
+.logo {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: #00b3ad;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: color 0.3s, transform 0.3s;
+}
+
+.logo:hover {
+    color: #008c86;
+    transform: scale(1.05);
+}
+
+.nav-links {
+    display: flex;
+    gap: 25px;
+}
+
+.nav-links a {
+    color: #333;
+    text-decoration: none;
+    font-size: 1rem;
+    font-weight: 500;
+    transition: color 0.25s, transform 0.25s;
+    position: relative;
+}
+
+.nav-links a::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    bottom: -4px;
+    width: 0;
+    height: 2px;
+    background: #00b3ad;
+    transition: width 0.3s ease;
+}
+
+.nav-links a:hover {
+    color: #00b3ad;
+    transform: translateY(-2px);
+}
+
+.nav-links a:hover::after {
+    width: 100%;
+}
+
+/* === MAIN CONTENT === */
+main {
+    flex: 1;
+    padding: 40px;
+    animation: fadeIn 0.4s ease-in;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* === HOME PAGE === */
+.home-container {
     text-align: center;
-    margin-bottom: 20px;
+    padding: 40px;
 }
 
+.site-title {
+    font-size: 3rem;
+    margin-bottom: 10px;
+    font-weight: bold;
+    color: #111;
+}
+
+.subtitle {
+    color: #666;
+    margin-bottom: 40px;
+    font-size: 1.1rem;
+}
+
+.categories {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 25px;
+    justify-items: center;
+}
+
+.category-card {
+    width: 220px;
+    padding: 25px;
+    background: #fff;
+    border-radius: 15px;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.category-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.12);
+}
+
+.category-card h2 {
+    margin: 0 0 10px;
+    color: #111;
+}
+
+.category-card p {
+    color: #555;
+    font-size: 0.9rem;
+}
+
+/* === TABLES / FORMS (for data pages) === */
 table {
     border-collapse: collapse;
     width: 100%;
     background: white;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    margin-top: 20px;
 }
 
 th, td {
-    border: 1px solid #ccc;
-    padding: 8px;
+    border: 1px solid #eee;
+    padding: 10px 12px;
+    text-align: left;
+    font-size: 0.95rem;
+}
+
+th {
+    background: #fafafa;
+    font-weight: 600;
+}
+
+tr:hover {
+    background: #f9f9f9;
 }
 
 form {
     margin-bottom: 15px;
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    align-items: center;
 }
 
-input, button {
-    padding: 5px;
-    margin: 2px;
+input, button, select {
+    padding: 8px 12px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    font-size: 0.95rem;
+}
+
+input:focus, select:focus {
+    outline: none;
+    border-color: #00b3ad;
+    box-shadow: 0 0 0 2px rgba(0, 179, 173, 0.15);
+}
+
+button {
+    background: #00b3ad;
+    color: white;
+    border: none;
+    cursor: pointer;
+    font-weight: 600;
+    transition: background 0.25s, transform 0.1s;
+}
+
+button:hover {
+    background: #009a94;
+    transform: translateY(-1px);
+}
+
+
+
+/* === BOOK PAGE CONTAINER === */
+.book-container {
+    /* Nadal Flexbox w KOLUMNIE, aby ułożyć sekcje pionowo: top-section-grid, review-card, action-footer. */
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+    padding: 40px;
+    max-width: 1200px; /* Zwiększamy max. szerokość dla lepszego efektu dwukolumnowego */
+    margin: 0 auto;
+    align-items: center; /* Centrujemy wszystkie elementy na środku */
+    width: 100%;
+}
+
+/* NOWY KONTENER: Siatka dla Book Card i Edit Card */
+.top-section-grid {
+    display: grid;
+    /* Dwie kolumny, każda zajmuje 1fr, aby były równe */
+    grid-template-columns: 1fr 1fr;
+    gap: 30px;
+    width: 100%;
+    /* Dopasowujemy wysokość do najdłuższego elementu */
+    align-items: stretch;
+}
+
+/* === GŁÓWNA KARTA INFORMACYJNA === */
+.book-card {
+    background: #fff;
+    border-radius: 15px;
+    padding: 30px;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+    text-align: left;
+    width: 100%;
+    height: 100%; /* MUSI być 100%, aby rozciągnąć się na wysokość Edit Card */
+    transition: box-shadow 0.2s;
+}
+
+.book-card:hover{
+    transform: translateY(-2px);
+    box-shadow: 0 5px 12px rgba(0,0,0,0.15);
+}
+
+.book-title {
+    font-size: 2.5rem;
+    color: #222;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #f0f0f0;
+    text-align: center;
+}
+
+/* Układ Grid dla metadanych - 2 kolumny, by zmieścić więcej na małej przestrzeni */
+.details-grid {
+    display: grid;
+    /* Dwie równe kolumny dla schludnego wyglądu. Na małym ekranie automatycznie przejdą na 1 kolumnę. */
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 15px 30px;
+    margin-bottom: 20px;
+}
+
+.book-meta {
+    color: #444;
+    font-size: 1rem;
+    /* Usuwamy wszystkie marginesy pionowe dla czystszego układu Grid */
+    margin: 0;
+}
+
+.book-meta strong {
+    color: #222;
+    font-weight: 600;
+}
+
+/* Stylizacja wyświetlanej recenzji */
+.book-review {
+    margin-top: 20px;
+    padding: 15px;
+    border-top: 1px solid #eee;
+    background: #fdfdfd;
+    border-radius: 8px;
+}
+.book-review h3 {
+    font-size: 1.2rem;
+    color: #00b3ad;
+    margin-bottom: 10px;
+}
+.book-review p {
+    font-style: italic;
+    color: #555;
+    line-height: 1.6;
+}
+
+/* resizable text area for review */
+.resizable-textarea {
+    resize: vertical !important;
+    overflow: auto;
+    min-height: 80px;
+    padding: 10px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    font-size: 0.95rem;
+}
+
+
+/* === KARTY AKCJI (PODSTAWOWY STYL) === */
+.card {
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+    height: fit-content;
+
+    /* Mały efekt po najechaniu */
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 12px rgba(0,0,0,0.15);
+}
+
+.card h3 {
+    margin-bottom: 15px;
+    font-weight: 600;
+    color: #333;
+}
+
+/* === KARTA EDYCJI (EDIT CARD) === */
+.edit-card {
+    /* Upewniamy się, że Edit Card ma stałą wysokość dzięki height: 100% w .top-section-grid */
+    height: 100%;
+}
+
+.edit-card form {
+    /* ZMIANA 1: Usuwamy 'justify-content: space-between',
+       aby przycisk był blisko pól input, a nie na dole karty. */
+    display: flex;
+    flex-direction: column;
+    /* Usuwamy height: 100% i justify-content: space-between */
+    height: auto;
+}
+
+.edit-card form input {
+    flex-shrink: 0;
+    margin-bottom: 10px; /* Dodatkowe odstępy między inputami */
+}
+.edit-card form .btn-primary {
+    /* Usuwamy 'margin-top: auto', aby przycisk był zaraz pod ostatnim polem input */
+    margin-top: 15px;
+}
+
+/* === KARTA RECENZJI (REVIEW CARD) === */
+.review-card {
+    width: 100%; /* MUSI mieć 100%, aby zająć całą szerokość kontenera */
+}
+
+
+/* === INPUTY I PRZYCISKI === */
+.form input, .form textarea {
+    width: 100%;
+    margin: 5px 0 10px;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    resize: none;
+}
+
+.btn-primary, .btn-secondary, .btn-danger {
+    width: 100%;
+    padding: 10px;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    color: white;
+    cursor: pointer;
+    transition: transform 0.1s, opacity 0.2s;
+}
+
+.btn-primary {
+    background-color: #00b3ad; /* Użyjemy koloru akcentu */
+}
+.btn-secondary {
+    background-color: #2196f3;
+}
+.btn-danger {
+    background-color: #f44336;
+}
+
+.btn-primary:hover, .btn-secondary:hover, .btn-danger:hover {
+    opacity: 0.9;
+    transform: translateY(-2px);
+}
+
+
+/* === STOPKA AKCJI (LINK WSTECZ + DANGER ZONE) === */
+.action-footer {
+    /* ZMIANA 2: Ograniczamy szerokość stopki do szerokości głównego kontenera i centrujemy ją */
+    max-width: 1200px;
+    width: 100%;
+    margin: 0 auto;
+
+    display: flex;
+    justify-content: space-between; /* Wypycha elementy na boki */
+    align-items: center;
+    padding: 20px 180px 10px; /* Większy odstęp od góry */
+    border-top: 1px solid #eee;
+}
+
+.back-link {
+    display: block;
+    text-align: left;
+    color: #00b3ad; /* Ujednolicamy kolor */
+    text-decoration: none;
+    font-weight: bold;
+    font-size: 1.05rem;
+    flex-grow: 0;
+}
+
+.back-link:hover {
+    text-decoration: underline;
+}
+
+/* === DANGER ZONE CARD (W STOPCE) === */
+.danger-zone {
+    border: 1px solid #f4433644;
+    background: #fff8f8;
+    padding: 15px 20px;
+    box-shadow: none; /* Usuwamy cień, bo jest w stopce */
+    height: auto;
+}
+
+.danger-zone h3 {
+    margin-bottom: 10px;
+}
+
+.danger-zone form {
+    margin: 0;
+    display: block;
+}
+
+.danger-zone button {
+    /* Ustawiamy stałą, mniejszą szerokość dla przycisku w stopce */
+    width: 200px;
+    font-weight: normal; /* Lekko zmieniamy styl */
+}
+
+
+/* === FOOTER === */
+footer {
+    text-align: center;
+    padding: 15px;
+    font-size: 0.85rem;
+    color: #777;
+    border-top: 1px solid rgba(0, 0, 0, 0.08);
+    background: #ffffffcc;
+    backdrop-filter: blur(10px);
+}
+
+/* === RESPONSIVE === */
+@media (max-width: 900px) {
+    /* Na mniejszych ekranach (poniżej 900px) przechodzimy na układ jednokolumnowy */
+    .top-section-grid {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+}
+
+@media (max-width: 800px) {
+    nav {
+        flex-direction: column;
+        gap: 10px;
+        padding: 15px;
+    }
+    .nav-links {
+        gap: 15px;
+    }
+    main {
+        padding: 20px;
+    }
+    .site-title {
+        font-size: 2.2rem;
+    }
+
+    .book-container {
+        padding: 20px 10px;
+        gap: 20px;
+    }
+
+    .book-title {
+        font-size: 2rem;
+    }
+
+    /* Stopka na małych telefonach */
+    .action-footer {
+        flex-direction: column;
+        gap: 15px;
+        align-items: center;
+        text-align: center;
+        padding: 10px 20px;
+    }
+    .back-link {
+        order: 2; /* Link na samym dole */
+    }
+    .danger-zone {
+        order: 1; /* Danger Zone nad linkiem */
+        width: 100%;
+        text-align: center;
+    }
+    .danger-zone button {
+        width: 100%;
+        max-width: 250px;
+    }
 }

@@ -25,8 +25,12 @@ def get_books():
     return books
 
 
-
 @app.route("/")
+def home():
+    return render_template("home.html")
+
+
+@app.route("/books")
 def index():
     books = get_books()
     return render_template("index.html", books=books)
@@ -97,6 +101,11 @@ def edit_book_route(book_id):
     category = request.form.get("category")
     edit_book(book_id, title, author, category)
     return redirect(url_for("book_detail", book_id=book_id))
+
+@app.errorhandler(404)
+@app.errorhandler(500)
+def handle_error(e):
+    return redirect(url_for("home"))
 
 if __name__ == "__main__":
     app.run(debug=False)

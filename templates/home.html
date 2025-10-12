@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="home-container">
+    <h1 class="site-title">Polecajka Kapola</h1>
+    <p class="subtitle">Your personal recommendation hub.</p>
+
+    <div class="categories">
+        <div class="category-card" onclick="window.location.href='/books'">
+            <h2>Books</h2>
+            <p>Track your reading list and reviews.</p>
+        </div>
+
+        <div class="category-card" onclick="window.location.href='/games'">
+            <h2>Games</h2>
+            <p>Keep your gaming experiences organized.</p>
+        </div>
+
+        <div class="category-card" onclick="window.location.href='/movies'">
+            <h2>Movies</h2>
+            <p>List your favorite films and ratings.</p>
+        </div>
+
+        <div class="category-card" onclick="window.location.href='/series'">
+            <h2>TV Series</h2>
+            <p>Remember the shows you’ve watched or plan to watch.</p>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

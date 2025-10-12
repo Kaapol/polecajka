@@ -1,25 +1,36 @@
 <!DOCTYPE html>
-<html lang="pl">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>📚 Polecajka</title>
+    <title>Polecajka Kapola</title>
 
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 
-    <!-- DataTables CSS -->
+    <!-- DataTables -->
     <link rel="stylesheet" href="https://cdn.datatables.net/2.1.8/css/dataTables.dataTables.min.css">
-
-    <!-- DataTables JS + jQuery -->
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script src="https://cdn.datatables.net/2.1.8/js/dataTables.min.js"></script>
+
 </head>
+
 <body>
-    <header>
-        <h1>📖 Moja Polecajka</h1>
-    </header>
+    <nav>
+        <div class="logo" onclick="window.location.href='/'">Polecajka</div>
+        <div class="nav-links">
+            <a href="/">Home</a>
+            <a href="/books">Books</a>
+            <a href="/games">Games</a>
+            <a href="/movies">Movies</a>
+            <a href="/series">TV Series</a>
+        </div>
+    </nav>
 
     <main>
         {% block content %}{% endblock %}
     </main>
+
+    <footer>
+        <p>© 2025 Polecajka Kapola. Built with Flask ⚡</p>
+    </footer>
 </body>
 </html>
