@@ -23,16 +23,25 @@
                 {% endif %}
 
                 {% if book['rating'] %}
-                <p class="book-meta rating"><strong>Rating:</strong> ⭐ {{ book['rating'] }}/10</p>
-                {% endif %}
-            </div>
+                <p class="book-meta rating">
+                    <strong>Rating:</strong> ⭐ {{ book['rating'] }}/10
 
-            {% if book['review'] %}
-            <div class="book-review">
-                <h3>📖 Your Review</h3>
-                <p>"{{ book['review'] }}"</p>
+                    {% if book['review'] %}
+                    - <span class="review-button" onclick="openReviewModal(event)">📖 Review</span>
+                    {% endif %}
+                </p>
+                {% endif %}
+
+                <!-- Modal Popup -->
+                <div id="reviewModal" class="modal">
+                    <div class="modal-content">
+                        <span class="close" onclick="closeReviewModal()">&times;</span>
+                        <h3>📖 Your Review</h3>
+                        <p>"{{ book['review'] }}"</p>
+                    </div>
+                </div>
+
             </div>
-            {% endif %}
         </div>
 
         <!-- 2. KARTA EDYCJI (PRZENIESIONA NA ZEWNĄTRZ DLA UKŁADU GRID) -->
@@ -88,6 +97,24 @@
         const confirmed = confirm(`Are you sure you want to delete "${title}" by ${author}`);
         if (confirmed) {
             document.getElementById('deleteForm').submit();
+        }
+    }
+
+
+    function openReviewModal(event) {
+    event.preventDefault();
+    document.getElementById('reviewModal').style.display = 'block';
+}
+
+    function closeReviewModal() {
+        document.getElementById('reviewModal').style.display = 'none';
+    }
+
+    // kliknięcie poza modal zamyka popup
+    window.onclick = function(event) {
+        const modal = document.getElementById('reviewModal');
+        if (event.target == modal) {
+            modal.style.display = "none";
         }
     }
 </script>

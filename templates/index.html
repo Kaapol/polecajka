@@ -1,25 +1,56 @@
 {% extends "base.html" %}
 
 {% block content %}
-<h2>Lista książek</h2>
+<h2>Book list</h2>
 
 <form action="{{ url_for('add') }}" method="POST">
-    <input type="text" name="title" placeholder="Tytuł" required>
-    <input type="text" name="author" placeholder="Autor">
-    <input type="text" name="category" placeholder="Kategoria">
-    <button type="submit">Dodaj książkę</button>
+    <input type="text" name="title" placeholder="Title" required>
+    <input type="text" name="author" placeholder="Author">
+    <input type="text" name="category" placeholder="Category">
+    <button type="submit">Add a new book</button>
 </form>
+
+<div class="search-controls-wrapper">
+    <label>🔍 Search:</label>
+    <input type="text" id="custom-search" placeholder="Enter phrase..." style="width:250px; padding:5px; margin-left:10px;">
+
+    <div class="column-search-checkboxes">
+        <label>ID<input type="checkbox" checked data-column="0"></label>
+        <label>Title<input type="checkbox" checked data-column="1"></label>
+        <label>Author<input type="checkbox" checked data-column="2"></label>
+        <label>Category<input type="checkbox" checked data-column="3"></label>
+
+        <!-- dropdown for status -->
+        <label>Status:
+            <select id="status-filter" data-column="4">
+                <option value="">All</option>
+                <option value="To Read">To Read</option>
+                <option value="Completed">Completed</option>
+            </select>
+        </label>
+
+        <!-- rating range slider -->
+        <div class="rating-slider-container">
+            <label>Rating:</label>
+            <div class="slider-wrapper">
+                <input type="range" id="rating-min" min="0" max="10" value="0" step="1">
+                <input type="range" id="rating-max" min="0" max="10" value="10" step="1">
+                <div class="slider-track"></div>
+            </div>
+            <span id="rating-display">0 - 10</span>
+        </div>
+    </div>
+</div>
 
 <table id="books-table" class="display">
     <thead>
         <tr>
             <th>ID</th>
-            <th>Tytuł</th>
-            <th>Autor</th>
-            <th>Kategoria</th>
+            <th>Title</th>
+            <th>Author</th>
+            <th>Category</th>
             <th>Status</th>
-            <th>Ocena</th>
-            <th>Recenzja</th>
+            <th>Rating</th>
         </tr>
     </thead>
 
@@ -32,41 +63,119 @@
                 <td>{{ book['category'] }}</td>
                 <td>{{ book['status'] }}</td>
                 <td>{{ book['rating'] or '' }}</td>
-                <td>{{ book['review'] or '' }}</td>
             </tr>
         {% endfor %}
     </tbody>
 </table>
 
 <script>
-
-function toggleEdit(bookId) {
-    const form = document.getElementById(`edit-${bookId}`);
-    form.style.display = (form.style.display === 'none' || form.style.display === '') ? 'block' : 'none';
-}
-
-function toggleComplete(bookId) {
-    const form = document.getElementById(`complete-${bookId}`);
-    form.style.display = (form.style.display === 'none' || form.style.display === '') ? 'block' : 'none';
-}
-
-
 $(document).ready(function() {
-    $('#books-table').DataTable({
+    var table = $('#books-table').DataTable({
         paging: true,
-        searching: true,
+        searching: false,
         ordering: true,
         columnDefs:[{orderable: false, targets: -1}],
         language: {},
         pageLength: 10,
         rowCallback: function(row, data) {
-        $(row).css('cursor', 'pointer');
-        $(row).off('click').on('click', function() {
-            const bookId = $(row).data('id');
-            window.location.href = `/book/${bookId}`;
+            $(row).css('cursor', 'pointer');
+            $(row).off('click').on('click', function() {
+                const bookId = $(row).data('id');
+                window.location.href = `/book/${bookId}`;
+            });
+        }
+    });
+
+    //search bar with tickboxes
+    function customFilter(){
+
+        // take what user has typed in
+        const searchTerm = $('#custom-search').val().toLowerCase();
+
+        //  check which checkboxes are checked
+        //   $('.column-search-checkboxes input:checked') – wszystkie zaznaczone inputy w divie z checkboxami
+        //   .map(...) – dla każdego zaznaczonego checkboxa wyciąga numer kolumny z data-column
+        //   parseInt(...) – zamieniamy string na liczbę
+        //   .get() – konwertuje wynik jQuery do normalnej tablicy JS
+        const checkedColumns = $('.column-search-checkboxes input:checked')
+            .map(function() {return parseInt($(this).data('column')); })
+            .get();
+
+        // take option from dropdown status
+        const statusValue = $('#status-filter').val().toLowerCase();
+
+        // rating from slider
+        const minRating = parseFloat($('#rating-min').val()) || 0;
+        const maxRating = parseFloat($('#rating-max').val()) || 10;
+
+        //if nothing is ticked search everywhere
+        const activeColumns = checkedColumns.length ? checkedColumns : [0,1,2,3,4,5];
+
+        //check every cell in table
+        table.rows().every(function(){
+           const rowData = this.data();
+
+           //check if text matches
+           const textMatch = activeColumns.some(col=>
+               (rowData[col] || '').toString().toLowerCase().includes(searchTerm)
+           );
+
+           //check if matches status
+           const statusMatch = !statusValue || (rowData[4] || '').toLowerCase() === statusValue;
+
+           //check if rating matches
+            const rating = parseFloat(rowData[5]) || 0;
+            const ratingMatch = rating >= minRating && rating <= maxRating;
+
+           if ((textMatch || !searchTerm) && statusMatch && ratingMatch) {
+               $(this.node()).show();
+           } else {
+               $(this.node()).hide();
+           }
         });
     }
+
+    // Events
+    // if typed in search bar
+    $('#custom-search').on('keyup', customFilter);
+
+    // if tickbox changed
+    $('.column-search-checkboxes input').on('change', customFilter);
+
+    //if status changed
+    $('#status-filter').on('change', customFilter);
+
+    // rating slider logic
+    const ratingMin = $('#rating-min');
+    const ratingMax = $('#rating-max');
+    const ratingDisplay = $('#rating-display');
+    const sliderTrack = $('.slider-track');
+
+    function updateSliderTrack() {
+        const min = parseFloat(ratingMin.val());
+        const max = parseFloat(ratingMax.val());
+        const percentMin = (min / 10) * 100;
+        const percentMax = (max / 10) * 100;
+        sliderTrack.css({
+            left: percentMin + '%',
+            right: (100 - percentMax) + '%'
+        });
+        ratingDisplay.text(`${min} - ${max}`);
+    }
+
+    ratingMin.on('input', function() {
+        if (parseFloat(ratingMin.val()) > parseFloat(ratingMax.val())) ratingMin.val(ratingMax.val());
+        updateSliderTrack();
+        customFilter();
     });
+
+    ratingMax.on('input', function() {
+        if (parseFloat(ratingMax.val()) < parseFloat(ratingMin.val())) ratingMax.val(ratingMin.val());
+        updateSliderTrack();
+        customFilter();
+    });
+
+    updateSliderTrack();
 });
 </script>
 
