@@ -1,4 +1,5 @@
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, redirect, url_for, session, flash
+import bcrypt
 import sqlite3
 from add_book import add_book
 from remove_book import remove_book
@@ -8,7 +9,7 @@ from db_init import get_connection
 
 app = Flask(__name__)
 
-
+app.secret_key = "9e6663d956531a9dbdad7a8e5196119e6d6b8cf8a6154be26834db2789038a8d"
 
 def get_books():
     conn = get_connection()
@@ -106,6 +107,35 @@ def edit_book_route(book_id):
 @app.errorhandler(500)
 def handle_error(e):
     return redirect(url_for("home"))
+
+
+ADMIN_USERNAME = "admin"
+ADMIN_PASSWORD_HASH = b"$2b$12$rHOwLdcakTzBDyJXm4NA1On.94bCm4bNLZaUps7sEBsj.KQxtW5xK"
+
+@app.route("/login", methods=["GET", "POST"])
+def login():
+    if request.method == "POST":
+        username = request.form.get("username")
+        password = request.form.get("password")
+
+        if username == ADMIN_USERNAME and bcrypt.checkpw(password.encode("utf-8"), ADMIN_PASSWORD_HASH):
+            session["is_admin"] = True
+            session["username"] = username
+            flash("Logged in successfully!", "success")
+            return redirect(url_for("index"))
+        else:
+            return render_template("login.html", error="Invalid username or password")
+
+    return render_template("login.html")
+
+
+@app.route("/logout")
+def logout():
+    session.clear()
+    flash("Logged out successfully", "info")
+    return redirect(url_for("home"))
+
+
 
 if __name__ == "__main__":
     app.run(debug=False)
