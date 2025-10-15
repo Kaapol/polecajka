@@ -1,17 +1,21 @@
 from flask import Flask, render_template, request, redirect, url_for, session, flash
+import os
 import bcrypt
 import sqlite3
 from add_book import add_book
 from remove_book import remove_book
 from edit_book import edit_book
 from complete_book import complete_book
-from db_init import get_connection
+from db_init import get_connection, initialize_database
 
 app = Flask(__name__)
 
 app.secret_key = "9e6663d956531a9dbdad7a8e5196119e6d6b8cf8a6154be26834db2789038a8d"
 
 def get_books():
+    if not os.path.exists("books.db"):
+        return []
+
     conn = get_connection()
     cur = conn.cursor()
     cur.execute("""
@@ -33,8 +37,9 @@ def home():
 
 @app.route("/books")
 def index():
+    db_exists = os.path.exists("books.db")
     books = get_books()
-    return render_template("index.html", books=books)
+    return render_template("index.html", books=books, db_exists=db_exists)
 
 
 @app.route("/add", methods=["POST"])
@@ -135,6 +140,20 @@ def logout():
     flash("Logged out successfully", "info")
     return redirect(url_for("home"))
 
+
+@app.route("/init_books_db", methods=["POST"])
+def init_books_db():
+    if not session.get("is_admin"):
+        flash("Unauthorized", "danger")
+        return redirect(url_for("index"))
+
+    created = initialize_database()
+    if created:
+        flash("Books database created successfully!", "success")
+    else:
+        flash("Database already exists!", "info")
+
+    return redirect(url_for("index"))
 
 
 if __name__ == "__main__":

@@ -1,14 +1,37 @@
 {% extends "base.html" %}
 
 {% block content %}
-<h2>Book list</h2>
 
+
+{% if not db_exists %}
+
+    {% if session.get('is_admin') %}
+    <p style="margin:20px; opacity:0.7;">Database doesn't exist yet. Please use the button below to initialize it.</p>
+    <form action="{{ url_for('init_books_db') }}" method="POST" style="margin-bottom: 15px;">
+        <button type="submit" class="admin-btn">
+            Initialize Books Database
+        </button>
+    </form>
+    {% else %}
+    <p style="margin:20px; opacity:0.7;">Database doesn't exist yet. Please login as admin to initialize it.</p>
+
+    {% endif %}
+
+{% endif %}
+
+
+{% if db_exists %}
 <form action="{{ url_for('add') }}" method="POST">
     <input type="text" name="title" placeholder="Title" required>
     <input type="text" name="author" placeholder="Author">
     <input type="text" name="category" placeholder="Category">
     <button type="submit">Add a new book</button>
 </form>
+{% else %}
+<p style="margin:20px; opacity:0.5;">Cannot add books because database doesn't exist yet.</p>
+{% endif %}
+
+<h2>Book list</h2>
 
 <div class="search-controls-wrapper">
     <label>🔍 Search:</label>
@@ -55,17 +78,18 @@
     </thead>
 
     <tbody>
-        {% for book in books %}
-            <tr data-id="{{ book['id'] }}">
-                <td>{{ book['id'] }}</td>
-                <td>{{ book['title'] }}</td>
-                <td>{{ book['author'] }}</td>
-                <td>{{ book['category'] }}</td>
-                <td>{{ book['status'] }}</td>
-                <td>{{ book['rating'] or '' }}</td>
-            </tr>
-        {% endfor %}
+    {% for book in books %}
+        <tr data-id="{{ book['id'] }}">
+            <td>{{ loop.index }}</td>
+            <td>{{ book['title'] }}</td>
+            <td>{{ book['author'] }}</td>
+            <td>{{ book['category'] }}</td>
+            <td>{{ book['status'] }}</td>
+            <td>{{ book['rating'] or '' }}</td>
+        </tr>
+    {% endfor %}
     </tbody>
+
 </table>
 
 <script>
