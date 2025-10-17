@@ -614,6 +614,7 @@ input[type="range"]::-webkit-slider-thumb:hover {
 
 /* === FOOTER (OGÓLNY) === */
 footer {
+    position: relative; /* dodajemy */
     text-align: center;
     padding: 15px;
     font-size: 0.85rem;
@@ -622,6 +623,32 @@ footer {
     background: #ffffffcc;
     backdrop-filter: blur(10px);
 }
+
+
+#google_translate_wrapper {
+    position: absolute;
+    left: 5px;
+    bottom: 5px;
+    z-index: 5;
+    transform: scale(0.8); /* zmniejszenie całości */
+    transform-origin: left bottom; /* skaluje od lewego dolnego rogu */
+}
+
+/* Dodatkowo wymusz kolor na select */
+#google_translate_wrapper select {
+    background: var(--color-card-bg) !important;
+    color: var(--color-text-dark) !important;
+    border-radius: 6px !important;
+    border: 1px solid #ccc !important;
+    padding: 5px 8px !important;
+}
+
+/* Jeśli iframe (tło widgetu) wychodzi poza footer */
+.goog-te-banner-frame.skiptranslate {
+    display: none !important; /* ukrywa pasek Google Translate na górze */
+}
+
+
 
 
 /* ======================================================================
@@ -782,10 +809,15 @@ footer {
 }
 
 
-/** DARK MODE **/
+/** ===============================
+            DARK MODE
+================================= */
 
+/* -------------------------
+   Zmienne kolorów
+-------------------------- */
 body.dark-mode {
-  --color-primary: #00b3ad; /* Zachowanie spójności z Light Mode dla akcentu */
+  --color-primary: #00b3ad;         /* Zachowanie spójności z Light Mode dla akcentu */
   --color-primary-dark: #009a94;
   --color-text-dark: #eee;
   --color-text-light: #bbb;
@@ -794,6 +826,9 @@ body.dark-mode {
   --color-border-light: rgba(255, 255, 255, 0.1);
 }
 
+/* -------------------------
+   Główne tło i kolory tekstu
+-------------------------- */
 body.dark-mode body,
 body.dark-mode nav,
 body.dark-mode footer {
@@ -801,12 +836,14 @@ body.dark-mode footer {
   color: var(--color-text-dark);
 }
 
+/* Nav i footer - półprzezroczyste tło z borderem */
 body.dark-mode nav,
 body.dark-mode footer {
   background: rgba(30, 30, 30, 0.8);
   border-color: var(--color-border-light);
 }
 
+/* Karty, formularze, tabela */
 body.dark-mode .category-card,
 body.dark-mode .card,
 body.dark-mode .login-container,
@@ -816,6 +853,7 @@ body.dark-mode table {
   border-color: var(--color-border-light);
 }
 
+/* Tabela - nagłówki i hover */
 body.dark-mode th {
   background: #222;
 }
@@ -824,11 +862,9 @@ body.dark-mode tr:hover {
   background: #1a1a1a;
 }
 
-/* ====================================
-   NOWE REGUŁY DLA KONTRASTU TEKSTU
-   ==================================== */
-
-/* Zapewnienie, że wszystkie nagłówki będą jasne, nadpisując ich domyślne, ciemne style. */
+/* -------------------------
+   Tekst nagłówków i ważny tekst
+-------------------------- */
 body.dark-mode h1,
 body.dark-mode h2,
 body.dark-mode h3,
@@ -838,26 +874,68 @@ body.dark-mode strong,
 body.dark-mode .site-title,
 body.dark-mode .book-title,
 body.dark-mode .card h3 {
-    color: var(--color-text-dark); /* Jasny kolor */
+  color: var(--color-text-dark); /* jasny kolor */
 }
 
-/* Zapewnienie, że akapity i inne mniej kontrastowe teksty będą jasnoszare. */
+/* Tekst mniej kontrastowy / akapity */
 body.dark-mode p,
 body.dark-mode .subtitle,
 body.dark-mode .category-card p,
 body.dark-mode .book-meta,
 body.dark-mode .book-review p {
-    color: var(--color-text-light); /* Jasnoszary kolor */
+  color: var(--color-text-light); /* jasnoszary */
 }
 
-/* Poprawka dla tekstu w inputach (żeby nie był czarny na ciemnym tle) */
+/* -------------------------
+   Inputy, selecty, textarea
+-------------------------- */
 body.dark-mode input,
 body.dark-mode select,
+body.dark-mode .modal-content,
 body.dark-mode textarea {
-    background: #252525;
-    border-color: #444;
-    color: var(--color-text-dark);
+  background: #252525;
+  border-color: #444;
+  color: var(--color-text-dark);
 }
+
+/* -------------------------
+   Toggle Dark Mode - ikony
+   Dark mode ON → pokazujemy słońce
+   Light mode ON → pokazujemy księżyc
+-------------------------- */
+#dark-toggle {
+    position: absolute;
+    right: 15px; /* odstęp od prawej krawędzi */
+    bottom: 15px; /* odstęp od dolnej krawędzi */
+  cursor: pointer;
+  width: 36px;
+  height: 36px;
+  transition: transform 0.2s, color 0.2s;
+    padding-top: 15px;
+  color: #ffcc00; /* domyślny kolor */
+}
+
+#dark-toggle:hover {
+    transform: scale(1.2);
+    color: #ffd633;
+}
+
+/* Light mode - pokazujemy księżyc, ukrywamy słońce */
+body:not(.dark-mode) .moon-icon {
+  display: inline;
+}
+body:not(.dark-mode) .sun-icon {
+  display: none;
+}
+
+/* Dark mode - pokazujemy słońce, ukrywamy księżyc */
+body.dark-mode .sun-icon {
+  display: inline;
+}
+body.dark-mode .moon-icon {
+  display: none;
+}
+
 
 
 
