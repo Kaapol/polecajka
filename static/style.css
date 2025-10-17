@@ -782,6 +782,84 @@ footer {
 }
 
 
+/** DARK MODE **/
+
+body.dark-mode {
+  --color-primary: #00b3ad; /* Zachowanie spójności z Light Mode dla akcentu */
+  --color-primary-dark: #009a94;
+  --color-text-dark: #eee;
+  --color-text-light: #bbb;
+  --color-background: #121212;
+  --color-card-bg: #1e1e1e;
+  --color-border-light: rgba(255, 255, 255, 0.1);
+}
+
+body.dark-mode body,
+body.dark-mode nav,
+body.dark-mode footer {
+  background: var(--color-background);
+  color: var(--color-text-dark);
+}
+
+body.dark-mode nav,
+body.dark-mode footer {
+  background: rgba(30, 30, 30, 0.8);
+  border-color: var(--color-border-light);
+}
+
+body.dark-mode .category-card,
+body.dark-mode .card,
+body.dark-mode .login-container,
+body.dark-mode table {
+  background: var(--color-card-bg);
+  color: var(--color-text-dark);
+  border-color: var(--color-border-light);
+}
+
+body.dark-mode th {
+  background: #222;
+}
+
+body.dark-mode tr:hover {
+  background: #1a1a1a;
+}
+
+/* ====================================
+   NOWE REGUŁY DLA KONTRASTU TEKSTU
+   ==================================== */
+
+/* Zapewnienie, że wszystkie nagłówki będą jasne, nadpisując ich domyślne, ciemne style. */
+body.dark-mode h1,
+body.dark-mode h2,
+body.dark-mode h3,
+body.dark-mode a,
+body.dark-mode label,
+body.dark-mode strong,
+body.dark-mode .site-title,
+body.dark-mode .book-title,
+body.dark-mode .card h3 {
+    color: var(--color-text-dark); /* Jasny kolor */
+}
+
+/* Zapewnienie, że akapity i inne mniej kontrastowe teksty będą jasnoszare. */
+body.dark-mode p,
+body.dark-mode .subtitle,
+body.dark-mode .category-card p,
+body.dark-mode .book-meta,
+body.dark-mode .book-review p {
+    color: var(--color-text-light); /* Jasnoszary kolor */
+}
+
+/* Poprawka dla tekstu w inputach (żeby nie był czarny na ciemnym tle) */
+body.dark-mode input,
+body.dark-mode select,
+body.dark-mode textarea {
+    background: #252525;
+    border-color: #444;
+    color: var(--color-text-dark);
+}
+
+
 
 
 /* ======================================================================

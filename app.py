@@ -7,10 +7,19 @@ from remove_book import remove_book
 from edit_book import edit_book
 from complete_book import complete_book
 from db_init import get_connection, initialize_database
+from urllib.parse import urlparse, urljoin
 
 app = Flask(__name__)
 
 app.secret_key = "9e6663d956531a9dbdad7a8e5196119e6d6b8cf8a6154be26834db2789038a8d"
+
+
+def is_safe_url(target):
+    ref_url = urlparse(request.host_url)
+    test_url = urlparse(urljoin(request.host_url, target))
+    return test_url.scheme in ('http', 'https') and ref_url.netloc == test_url.netloc
+
+
 
 def get_books():
     if not os.path.exists("books.db"):
@@ -119,25 +128,45 @@ ADMIN_PASSWORD_HASH = b"$2b$12$rHOwLdcakTzBDyJXm4NA1On.94bCm4bNLZaUps7sEBsj.KQxt
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
+    # Jeżeli użytkownik jest już zalogowany, to niech nie wraca na login
+    if session.get("is_admin"):
+        return redirect(session.get("pre_login_url") or url_for("index"))
+
+    if request.method == "GET":
+        # referrer can be none if entering directly
+        session["pre_login_url"] = request.referrer or url_for("index")
+        # dont save if referrer is login
+        if session["pre_login_url"].endswith("/login"):
+            session["pre_login_url"] = url_for("index")
+
     if request.method == "POST":
         username = request.form.get("username")
         password = request.form.get("password")
 
         if username == ADMIN_USERNAME and bcrypt.checkpw(password.encode("utf-8"), ADMIN_PASSWORD_HASH):
+            session.permanent = True  # zachowuje sesję
             session["is_admin"] = True
             session["username"] = username
             flash("Logged in successfully!", "success")
-            return redirect(url_for("index"))
+
+            redirect_url = session.pop("pre_login_url", url_for("index"))
+            return redirect(redirect_url)
+
         else:
             return render_template("login.html", error="Invalid username or password")
 
     return render_template("login.html")
 
 
+
 @app.route("/logout")
 def logout():
     session.clear()
     flash("Logged out successfully", "info")
+
+    referrer = request.referrer
+    if referrer and is_safe_url(referrer):
+        return redirect(referrer)
     return redirect(url_for("home"))
 
 

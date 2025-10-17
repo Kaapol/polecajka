@@ -28,6 +28,8 @@
     <nav>
         <div class="logo" onclick="window.location.href='/'">Polecajka</div>
         <div class="nav-links">
+            <button id="dark-toggle">🌙 Dark Mode</button>
+
             <a href="/">Home</a>
             <a href="/books">Books</a>
             <a href="/games">Games</a>
@@ -50,5 +52,27 @@
     <footer>
         <p>© 2025 Polecajka Kapola. Built with Flask ⚡</p>
     </footer>
+
+<script>
+    const toggleButton = document.getElementById('dark-toggle');
+
+    // Sprawdzenie, czy dark mode był wcześniej w localStorage
+    if (localStorage.getItem('darkMode') === 'enabled') {
+      document.body.classList.add('dark-mode');
+    }
+
+    toggleButton.addEventListener('click', () => {
+      document.body.classList.toggle('dark-mode');
+
+      // Zapis do localStorage
+      if (document.body.classList.contains('dark-mode')) {
+        localStorage.setItem('darkMode', 'enabled');
+      } else {
+        localStorage.setItem('darkMode', 'disabled');
+      }
+    });
+
+</script>
+
 </body>
 </html>
