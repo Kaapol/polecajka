@@ -427,8 +427,8 @@ input[type="range"]::-webkit-slider-thumb:hover {
 
 .book-cover-image {
     /* Ustawienie rozmiaru okładki, dostosuj wg uznania */
-    width: 130px;
-    height: auto;
+    width: auto;
+    height: 200px;
     flex-shrink: 0; /* Zapobiega zmniejszaniu się obrazka */
     border-radius: 6px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
