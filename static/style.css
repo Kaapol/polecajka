@@ -215,6 +215,37 @@ button:hover {
    4. FILTRY TABEL (CHECKBOXY I SUWAK)
    ====================================================================== */
 
+.autocomplete-results{
+    position: absolute;
+    top: 140px;
+    background: var(--color-card-bg, #fff);
+    max-height: 200px;
+    overflow-y: auto;
+    width: 250px;
+    z-index: 1000;
+    border-radius: 6px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+
+.autocomplete-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  cursor: pointer;
+}
+
+.autocomplete-item:hover {
+  background: rgba(0, 179, 173, 0.1);
+}
+
+.autocomplete-item img {
+  width: 30px;
+  height: 45px;
+  object-fit: cover;
+  border-radius: 3px;
+}
+
 /* === KONTENER FILTRÓW === */
 .column-search-checkboxes {
   display: flex;

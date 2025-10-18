@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, session, flash
+from flask import Flask, render_template, request, redirect, url_for, session, flash, jsonify
 import os
 import bcrypt
 import sqlite3
@@ -8,6 +8,11 @@ from edit_book import edit_book
 from complete_book import complete_book
 from db_init import get_connection, initialize_database
 from urllib.parse import urlparse, urljoin
+from dotenv import load_dotenv
+import requests
+
+load_dotenv()
+GOOGLE_BOOKS_API_KEY = os.getenv("GOOGLE_BOOKS_API_KEY")
 
 app = Flask(__name__)
 
@@ -183,6 +188,50 @@ def init_books_db():
         flash("Database already exists!", "info")
 
     return redirect(url_for("index"))
+
+
+#get API
+@app.route("/search")
+def search_books():
+    query = request.args.get("q", "")
+    if not query:
+        return {"error": "Missing query"}, 400
+
+    url = "https://www.googleapis.com/books/v1/volumes"
+    params = {
+        "q": query,
+        "maxResults": 8,
+        "printType": "books",
+        "key": GOOGLE_BOOKS_API_KEY
+    }
+
+    response = requests.get(url, params=params)
+    if response.status_code != 200:
+        return {"error": "Google API request failed"}, 500
+
+    data = response.json()
+
+    results = []
+    for item in data.get("items", []):
+        volume = item.get("volumeInfo", {})
+        results.append({
+            "title": volume.get("title"),
+            "authors": volume.get("authors", []),
+            "thumbnail": volume.get("imageLinks", {}).get("thumbnail"),
+            "publishedDate": volume.get("publishedDate"),
+        })
+
+    return jsonify({
+        "results": [
+            {
+                "title": item["volumeInfo"].get("title", ""),
+                "authors": item["volumeInfo"].get("authors", []),
+                "thumbnail": item["volumeInfo"].get("imageLinks", {}).get("thumbnail", ""),
+                "categories": item["volumeInfo"].get("categories", [])
+            }
+            for item in data.get("items", [])
+        ]
+    })
 
 
 if __name__ == "__main__":

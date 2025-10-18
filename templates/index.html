@@ -22,8 +22,9 @@
 
 {% if db_exists %}
 <form action="{{ url_for('add') }}" method="POST">
-    <input type="text" name="title" placeholder="Title" required>
-    <input type="text" name="author" placeholder="Author">
+    <input type="text" name="title" id="book-title" placeholder="Title" required autocomplete="off">
+    <div id="autocomplete-results" class="autocomplete-results"></div>
+    <input type="text" name="author" id="book-author" placeholder="Author">
     <input type="text" name="category" placeholder="Category">
     <button type="submit">Add a new book</button>
 </form>
@@ -93,6 +94,73 @@
 </table>
 
 <script>
+
+    async function searchBook(query) {
+        const res = await fetch(`/search?q=${encodeURIComponent(query)}`);
+        const data = await res.json();
+        console.log(data.results); //list of books
+    }
+
+
+
+    document.addEventListener("DOMContentLoaded", () => {
+      const titleInput = document.getElementById("book-title");
+      const authorInput = document.getElementById("book-author");
+      const resultsBox = document.getElementById("autocomplete-results");
+      let timer = null;
+
+      titleInput.addEventListener("input", async function () {
+        const query = this.value.trim();
+        clearTimeout(timer);
+        resultsBox.innerHTML = "";
+
+        if (query.length < 2) return; // czekaj aż wpisze coś sensownego
+
+        timer = setTimeout(async () => {
+          const res = await fetch(`/search?q=intitle:${encodeURIComponent(query)}`);
+          const data = await res.json();
+          const results = data.results || [];
+
+          if (results.length === 0) return;
+
+          resultsBox.innerHTML = results
+            .map(book => `
+              <div class="autocomplete-item"
+                   data-title="${book.title}"
+                   data-author="${(book.authors && book.authors[0]) || ''}"
+                   data-category="${(book.categories && book.categories[0]) || ''}">
+                ${book.thumbnail ? `<img src="${book.thumbnail}" alt="">` : ""}
+                <div>
+                  <strong>${book.title}</strong><br>
+                  <small>${(book.authors && book.authors.join(", ")) || "Unknown author"}</small>
+                </div>
+              </div>
+            `)
+            .join("");
+
+          // obsługa kliknięcia
+          document.querySelectorAll(".autocomplete-item").forEach(item => {
+            item.addEventListener("click", () => {
+              titleInput.value = item.dataset.title;
+              authorInput.value = item.dataset.author;
+              document.querySelector('input[name="category"]').value = item.dataset.category || '';
+              resultsBox.innerHTML = "";
+            });
+          });
+        }, 300); // debounce 0.3s
+      });
+
+      // zamykamy listę przy kliknięciu poza
+      document.addEventListener("click", (e) => {
+        if (!resultsBox.contains(e.target) && e.target !== titleInput) {
+          resultsBox.innerHTML = "";
+        }
+      });
+    });
+
+
+
+
 $(document).ready(function() {
     var table = $('#books-table').DataTable({
         paging: true,
