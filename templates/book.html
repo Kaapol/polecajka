@@ -11,38 +11,45 @@
         <div class="book-card">
             <h1 class="book-title">{{ book['title'] }}</h1>
 
-            <!-- Siatka dla metadanych, aby były w rzędach, a nie w kolumnie -->
-            <div class="details-grid">
-                <p class="book-meta"><strong>Author:</strong> {{ book['author'] }}</p>
-                <p class="book-meta"><strong>Category:</strong> {{ book['category'] }}</p>
-                <p class="book-meta"><strong>Added:</strong> {{ book['date_added'] }}</p>
-                <p class="book-meta"><strong>Status:</strong> {{ book['status'] }}</p>
+            <div class="book-details-main">
 
-                {% if book['status'] == 'Completed' %}
-                <p class="book-meta finished"><strong>Completed:</strong> {{ book['date_finished'] }}</p>
+                {% if book['thumbnail'] %}
+                    <img src="{{ book['thumbnail'] | safe }}" alt="Book cover" class="book-cover-image">
                 {% endif %}
 
-                {% if book['rating'] %}
-                <p class="book-meta rating">
-                    <strong>Rating:</strong> ⭐ {{ book['rating'] }}/10
+                <div class="book-metadata-wrapper">
+                    <div class="details-grid">
+                        <p class="book-meta"><strong>Author:</strong> {{ book['author'] }}</p>
+                        <p class="book-meta"><strong>Category:</strong> {{ book['category'] }}</p>
+                        <p class="book-meta"><strong>Added:</strong> {{ book['date_added'] }}</p>
+                        <p class="book-meta"><strong>Status:</strong> {{ book['status'] }}</p>
 
-                    {% if book['review'] %}
-                    - <span class="review-button" onclick="openReviewModal(event)">📖 Review</span>
-                    {% endif %}
-                </p>
-                {% endif %}
+                        {% if book['status'] == 'Completed' %}
+                        <p class="book-meta finished"><strong>Completed:</strong> {{ book['date_finished'] }}</p>
+                        {% endif %}
 
-                <!-- Modal Popup -->
-                <div id="reviewModal" class="modal">
-                    <div class="modal-content">
-                        <span class="close" onclick="closeReviewModal()">&times;</span>
-                        <h3>📖 Your Review</h3>
-                        <p>"{{ book['review'] }}"</p>
+                        {% if book['rating'] %}
+                        <p class="book-meta rating">
+                            <strong>Rating:</strong> ⭐ {{ book['rating'] }}/10
+
+                            {% if book['review'] %}
+                            - <span class="review-button" onclick="openReviewModal(event)">📖 Review</span>
+                            {% endif %}
+                        </p>
+                        {% endif %}
+
+                        <div id="reviewModal" class="modal">
+                            <div class="modal-content">
+                                <span class="close" onclick="closeReviewModal()">&times;</span>
+                                <h3>📖 Your Review</h3>
+                                <p>"{{ book['review'] }}"</p>
+                            </div>
+                        </div>
+
                     </div>
                 </div>
-
+                </div>
             </div>
-        </div>
 
         <!-- 2. KARTA EDYCJI (PRZENIESIONA NA ZEWNĄTRZ DLA UKŁADU GRID) -->
         <div class="card edit-card">
@@ -66,6 +73,8 @@
             <button type="submit" class="btn-secondary">⭐ Submit Review</button>
         </form>
     </div>
+
+
 
 
     <!-- 4. STOPKA AKCJI (LINK + DANGER ZONE) -->

@@ -25,7 +25,8 @@ def initialize_database():
             author TEXT,
             category TEXT,
             status TEXT DEFAULT 'To Read',
-            date_added TEXT
+            date_added TEXT,
+            thumbnail TEXT
         )
     """)
 

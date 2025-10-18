@@ -417,13 +417,37 @@ input[type="range"]::-webkit-slider-thumb:hover {
     box-shadow: 0 5px 12px rgba(0,0,0,0.15);
 }
 
+.book-details-main {
+    display: flex;
+    /* Używamy flexbox, aby okładka (lewo) i metadane (prawo) były obok siebie */
+    gap: 30px;
+    align-items: flex-start; /* Okładka i tekst wyrównane do góry */
+    width: 100%;
+}
+
+.book-cover-image {
+    /* Ustawienie rozmiaru okładki, dostosuj wg uznania */
+    width: 130px;
+    height: auto;
+    flex-shrink: 0; /* Zapobiega zmniejszaniu się obrazka */
+    border-radius: 6px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    order: 2; /* Ustawia okładkę na początku */
+}
+
+.book-metadata-wrapper {
+    /* Pozwala metadanym zająć resztę dostępnego miejsca */
+    flex-grow: 1;
+    order: 1; /* Ustawia metadane na drugim miejscu */
+}
+
+/* Dostosowanie nagłówka dla lepszego wyglądu przy nowym układzie */
 .book-title {
-    font-size: 2.5rem;
-    color: #222;
+    /* W nowym układzie, gdzie okładka jest obok, tytuł powinien być wyrównany do lewej lub wyśrodkowany na szerokości całego .book-card, ale nie zakłócać .book-details-main */
+    text-align: left; /* Zmieniamy na lewo, żeby pasowało do tekstu */
+    padding-bottom: 5px;
     margin-bottom: 20px;
-    padding-bottom: 10px;
-    border-bottom: 2px solid #f0f0f0;
-    text-align: center;
+    font-size: 2.2rem;
 }
 
 /* Układ Grid dla metadanych */

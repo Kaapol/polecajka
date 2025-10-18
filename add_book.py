@@ -5,16 +5,17 @@ from datetime import datetime
 
 DB_NAME = "books.db"
 
-def add_book(title, author, category):
+def add_book(title, author, category, thumbnail=None):
+    print("DEBUG:", title, author, category, thumbnail)
     conn = get_connection()
     cur = conn.cursor()
 
     date_added = datetime.now().strftime("%d-%m-%Y")
 
     cur.execute("""
-    INSERT INTO books (title, author, category, date_added)
-    VALUES (?, ?, ?, ?)
-    """, (title, author, category, date_added))
+    INSERT INTO books (title, author, category, date_added, thumbnail)
+    VALUES (?, ?, ?, ?, ?)
+    """, (title, author, category, date_added, thumbnail))
 
     conn.commit()
     conn.close()
