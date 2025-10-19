@@ -10,6 +10,15 @@ def add_book(title, author, category, thumbnail=None):
     conn = get_connection()
     cur = conn.cursor()
 
+    #check if book already exists
+    cur.execute("SELECT id FROM books WHERE LOWER(title) = LOWER(?)", (title,))
+    existing = cur.fetchone()
+
+    if existing:
+        conn.close()
+        raise ValueError(f"Book {title} already exists!")
+
+
     date_added = datetime.now().strftime("%d-%m-%Y")
 
     cur.execute("""

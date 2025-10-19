@@ -796,7 +796,11 @@ def add():
     # Wypisuję końcowe dane które zapiszę do bazy
     # Przykład: "Final: Harry Potter | Rowling | Fantasy | https://books.google.com/..."
 
-    add_book(title, author, category, thumbnail)
+    try:
+        add_book(title, author, category, thumbnail)
+        flash(f"Book '{title}' added successfully!", "success")
+    except ValueError as e:
+        flash(str(e), "danger")
     # Wywołuję funkcję z pliku add_book.py
     # Ta funkcja:
     # 1. Otwiera połączenie z bazą danych
