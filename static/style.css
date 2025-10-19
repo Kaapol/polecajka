@@ -547,6 +547,13 @@ input[type="range"]::-webkit-slider-thumb:hover {
 
 
 /* === KARTA EDYCJI (EDIT CARD) === */
+/* ======================================================================
+   5. SEKCJA SZCZEGÓŁÓW KSIĄŻKI (.book-container)
+   ====================================================================== */
+
+/* ... (istniejący kod z sekcji 5) ... */
+
+/* === KARTA EDYCJI (EDIT CARD) === */
 .edit-card {
     height: 100%;
 }
@@ -554,8 +561,42 @@ input[type="range"]::-webkit-slider-thumb:hover {
     display: flex;
     flex-direction: column;
     height: auto;
-    gap: 0; /* Usuwamy domyślny gap z form */
+    gap: 0;
 }
+
+/* --- NOWY STYL DLA ETYKIETY DATY I INPUTU --- */
+.date-field-group {
+    /* Ustawienie kontenera jako Flexbox dla układu w rzędzie */
+    display: flex;
+    align-items: center; /* Wyśrodkowanie w pionie */
+    justify-content: space-between; /* Rozłożenie na całą szerokość */
+    width: 100%;
+    /* Odstępy, by pasowały do reszty inputów */
+    margin: 5px 0 10px;
+}
+
+.date-field-group .input-label {
+    /* Upewnienie się, że etykieta ma odpowiedni rozmiar tekstu */
+    font-size: 0.95rem;
+    color: var(--color-text-dark); /* Upewnienie się, że kolor jest widoczny */
+    margin: 0; /* Usuń ewentualne marginesy */
+    flex-shrink: 0; /* Zapobiega zmniejszaniu się tekstu */
+    padding-right: 15px; /* Dodatkowy odstęp między tekstem a inputem */
+    font-weight: 500;
+}
+
+.date-field-group input[type="date"] {
+    /* Nadpisanie domyślnego 100% szerokości inputów w formularzu */
+    width: auto;
+    flex-grow: 1; /* Pozwoli inputowi zająć pozostałą przestrzeń, ale nie wymusi 100% */
+    margin: 0; /* Usuwamy domyślne marginesy inputów z sekcji .form input */
+}
+
+/* Upewnienie się, że inputy tekstowe też mają margines pod sobą */
+.form input[type="text"] {
+    margin: 5px 0 10px;
+}
+/* ---------------------------------------------------- */
 
 /* === KARTA RECENZJI (REVIEW CARD) === */
 .review-card {
@@ -998,20 +1039,36 @@ body.dark-mode .moon-icon {
 /* ======================================================================
    8. RESPONSIVE
    ====================================================================== */
+/* ======================================================================
+   8. RESPONSIVE - POPRAWIONE
+   ====================================================================== */
 @media (max-width: 900px) {
     /* Na mniejszych ekranach (poniżej 900px) siatka przechodzi na jedną kolumnę */
     .top-section-grid {
+        /* Przejście z 2 kolumn na 1, np. z karty informacji i karty edycji */
         grid-template-columns: 1fr;
         gap: 20px;
     }
 
-    .action-footer {
-        /* Mniejszy padding dla stopki akcji */
-        padding: 20px 20px 10px;
-    }
+    /* Usunięto nadpisanie paddingu stopki akcji z tej sekcji.
+       Pozwalamy, by reguła poniżej 800px przejęła kontrolę nad układem stopki,
+       lub domyślny padding stopki (40px) zadziałał do 800px.
+    */
 }
 
+---
+
 @media (max-width: 800px) {
+    /* Zmniejszenie paddingów głównej treści */
+    main {
+        padding: 20px;
+    }
+    .book-container {
+        padding: 20px 10px;
+        gap: 20px;
+    }
+
+    /* Zmiana układu i paddingu paska nawigacyjnego */
     nav {
         flex-direction: column;
         gap: 10px;
@@ -1020,34 +1077,31 @@ body.dark-mode .moon-icon {
     .nav-links {
         gap: 15px;
     }
-    main {
-        padding: 20px;
-    }
+
+    /* Zmniejszenie nagłówków */
     .site-title {
         font-size: 2.2rem;
     }
-
-    .book-container {
-        padding: 20px 10px;
-        gap: 20px;
-    }
-
     .book-title {
         font-size: 2rem;
     }
 
     /* Stopka na małych telefonach */
     .action-footer {
+        /* Układ pionowy z wyśrodkowaniem */
         flex-direction: column;
         gap: 15px;
         align-items: center;
         text-align: center;
+        /* Nowy, mniejszy padding */
         padding: 10px 20px;
     }
     .back-link {
+        /* Link Wstecz na dole */
         order: 2;
     }
     .danger-zone {
+        /* Danger Zone na górze i pełna szerokość */
         order: 1;
         width: 100%;
         text-align: center;

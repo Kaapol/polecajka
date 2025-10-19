@@ -58,11 +58,23 @@
                 <input type="text" name="title" value="{{ book['title'] }}" placeholder="Title">
                 <input type="text" name="author" value="{{ book['author'] }}" placeholder="Author">
                 <input type="text" name="category" value="{{ book['category'] }}" placeholder="Category">
+
+                {% if book['status'] == 'Completed' %}
+                <div class="date-field-group">
+                    <label for="date_finished" class="input-label">Completed:</label>
+                    <input type="date" name="date_finished" id="date_finished"
+                               value="{{ book['date_finished']|datetimeformat }}"
+                               title="Date when you finished reading the book"
+                               aria-label="Date Completed">
+                </div>
+                {% endif %}
+
                 <button type="submit" class="btn-primary">💾 Save Changes</button>
             </form>
         </div>
 
     </div>
+
 
     <!-- 3. KARTA RECENZJI (BĘDZIE ZAJMOWAĆ CAŁĄ SZEROKOŚĆ) -->
     <div class="card review-card">
@@ -130,6 +142,7 @@
             modal.style.display = "none";
         }
     }
+
 </script>
 
 
