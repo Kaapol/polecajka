@@ -10,34 +10,49 @@ def complete_book(book_id, rating, review):
     cur = conn.cursor()
     cur.execute("PRAGMA foreign_keys = ON")  # włącz klucze obce
 
-    # 1️⃣ zaktualizuj status w books
+    # check if there is review
     cur.execute("""
-        UPDATE books
-        SET status = 'Completed'
+        SELECT date_finished
+        FROM reviews
         WHERE id = ?
     """, (book_id,))
 
-    # 2️⃣ Sprawdź, czy książka już ma recenzję
-    cur.execute("SELECT id FROM reviews WHERE book_id = ?", (book_id,))
     existing = cur.fetchone()
 
-    if existing:
-        # 3️⃣ Jeśli istnieje — aktualizuj
+    if existing and existing["date_finished"]:
+        # Jeśli istnieje — aktualizuj
         cur.execute("""
                     UPDATE reviews
                     SET rating        = ?,
-                        review        = ?,
-                        date_finished = ?
+                        review        = ?
                     WHERE book_id = ?
-                    """, (rating, review, datetime.now().strftime("%d-%m-%Y"), book_id))
+                    """, (rating, review, book_id))
         print(f"🔁 Updated review for book ID {book_id}")
     else:
-        # 4️⃣ Jeśli nie ma — dodaj nowy wpis
+        #Jeśli nie ma — dodaj nowy wpis
+        date_finished = datetime.now().strftime("%d-%m-%Y")
+
         cur.execute("""
-                    INSERT INTO reviews (book_id, rating, review, date_finished)
-                    VALUES (?, ?, ?, ?)
-                    """, (book_id, rating, review, datetime.now().strftime("%d-%m-%Y")))
+                    UPDATE book
+                    SET status = 'Completed'
+                    WHERE id = ?
+                    """, (book_id,))
         print(f"✅ Added new review for book ID {book_id}")
+
+        if existing:
+            #exists but with no date
+            cur.execute("""
+            UPDATE reviews
+            SET rating        = ?,
+                review        = ?,
+                date_finished = ?
+                WHERE book_id = ?
+            """, (rating, review, date_finished, book_id))
+        else:
+            cur.execute("""
+                INSERT INTO reviews (book_id, rating, review, date_finished)
+                    VALUES (?, ?, ?, ?)
+            """, (book_id, rating, review, date_finished))
 
     conn.commit()
     conn.close()

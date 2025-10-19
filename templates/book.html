@@ -66,11 +66,15 @@
 
     <!-- 3. KARTA RECENZJI (BĘDZIE ZAJMOWAĆ CAŁĄ SZEROKOŚĆ) -->
     <div class="card review-card">
-        <h3>⭐ Add Review</h3>
+        <h3>⭐ {% if book['rating'] %}Edit {% else %}Add{% endif %} Review</h3>
         <form action="{{ url_for('complete', book_id=book['id']) }}" method="POST" class="form">
-            <input type="number" name="rating" min="1" max="10" placeholder="Rating (1–10)" required>
-            <textarea name="review" placeholder="Your review..." rows="4" class="resizable-textarea"></textarea>
-            <button type="submit" class="btn-secondary">⭐ Submit Review</button>
+            <input type="number" name="rating" min="1" max="10"
+                   value="{{ book['rating'] or '' }}"
+                   placeholder="Rating (1–10)" required>
+            <textarea name="review" placeholder="Your review..." rows="5" class="resizable-textarea">{{ book['review'] or '' }}</textarea>
+            <button type="submit" class="btn-secondary">
+                {% if book['rating'] %}💾 Update Review{% else %}⭐ Submit Review{% endif %}
+            </button>
         </form>
     </div>
 

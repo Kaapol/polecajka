@@ -47,4 +47,3 @@ if __name__ == "__main__":
     author = input("Enter new author (or leave empty): ")
     category = input("Enter new category (or leave empty): ")
     edit_book(book_id, title or None, author or None, category or None)
-
