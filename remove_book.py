@@ -2,30 +2,27 @@ from db_init import client
 
 
 def remove_book(book_id):
-    if not conn:
-        print("Błąd połączenia w remove_book")
+    if not client:
+        print("❌ Błąd: brak połączenia z bazą")
         return
 
     try:
-        cur = conn.cursor()
-        # Klucze obce są włączone w get_connection(), więc recenzje usuną się kaskadowo
-        cur.execute("DELETE FROM books WHERE id = ?", (book_id,))
+        # Wykonaj DELETE
+        result = client.execute("DELETE FROM books WHERE id = ?", (book_id,))
 
-        conn.commit()
+        # Sprawdź czy coś usunięto
+        rows_affected = getattr(result, 'rows_affected', 0)
 
-        if cur.rowcount == 0:
+        if rows_affected == 0:
             print(f"❌ Nie znaleziono książki o ID {book_id}")
         else:
             print(f"✅ Usunięto książkę o ID {book_id} (wraz z recenzjami).")
 
     except Exception as e:
-        conn.rollback()
-        print(f"Błąd w remove_book: {e}")
-
-    finally:
-        if conn:
-            conn.close()
+        print(f"❌ Błąd w remove_book: {e}")
+        import traceback
+        traceback.print_exc()
 
 
 if __name__ == "__main__":
-    remove_book(999)  # Przetestuj usunięcie nieistniejącej książki
+    remove_book(999)  # Test
