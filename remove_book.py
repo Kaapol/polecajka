@@ -1,21 +1,30 @@
-import sqlite3
+# usunięto import sqlite3
+from db_init import client  # Importujemy klienta Turso
+
 
 def remove_book(id):
-    conn = sqlite3.connect("books.db")
-    conn.execute("PRAGMA foreign_keys = ON")  # <--- to musi być tu
-    cur = conn.cursor()
+    if not client:
+        return
 
-    cur.execute("DELETE FROM books WHERE id = ?", (id,))
+    # usunięto conn = sqlite3.connect...
+    # usunięto conn.execute("PRAGMA...")
+    # usunięto cur = conn.cursor()
 
-    if cur.rowcount == 0:
+    rs = client.execute("DELETE FROM books WHERE id = ?", (id,))
+
+    # Zmieniamy 'cur.rowcount' na 'rs.rows_affected'
+    if rs.rows_affected == 0:
         print(f"\n❌ No book found with id {id}")
     else:
         print(f"\n✅ A book with ID: {id} has been removed (and its reviews cascaded).")
 
-    conn.commit()
-    conn.close()
+    # usunięto conn.commit()
+    # usunięto conn.close()
 
 
 # testowo usun jedną książkę
 if __name__ == "__main__":
-    remove_book(1)
+    if client:
+        remove_book(1)
+    else:
+        print("Brak połączenia z bazą.")

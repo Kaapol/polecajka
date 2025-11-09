@@ -2,13 +2,14 @@ from flask import Flask, render_template, request, redirect, url_for, session, f
 from edit_book import edit_book, edit_review_date
 import os
 import bcrypt
-import sqlite3
+# usunięto 'import sqlite3'
 from add_book import add_book
 from remove_book import remove_book
-from edit_book import edit_book
+# usunięto 'from edit_book import edit_book' (był duplikat)
 from complete_book import complete_book
 from datetime import datetime
-from db_init import get_connection, initialize_database
+# Zmienione importy z db_init
+from db_init import client, initialize_database, rows_to_dicts, row_to_dict
 from urllib.parse import urlparse, urljoin, quote
 from dotenv import load_dotenv
 import requests
@@ -18,17 +19,22 @@ GOOGLE_BOOKS_API_KEY = os.getenv("GOOGLE_BOOKS_API_KEY")
 app = Flask(__name__)
 app.secret_key = "9e6663d956531a9dbdad7a8e5196119e6d6b8cf8a6154be26834db2789038a8d"
 
+
 def is_safe_url(target):
+    # ... (reszta kodu bez zmian)
     ref_url = urlparse(request.host_url)
     test_url = urlparse(urljoin(request.host_url, target))
+    # Zauważ dodany apostrof po https
     return test_url.scheme in ('http', 'https') and ref_url.netloc == test_url.netloc
 
+
 def get_books():
-    if not os.path.exists("books.db"):
-        return []
-    conn = get_connection()
-    cur = conn.cursor()
-    cur.execute("""
+    # usunięto 'if not os.path.exists("books.db"):' - to już nie ma sensu
+    if not client:
+        return []  # Zwróć pustą listę, jeśli baza nie jest połączona
+
+    # Zmieniona logika pobierania danych
+    rs = client.execute("""
                 SELECT b.id,
                        b.title,
                        b.author,
@@ -41,22 +47,27 @@ def get_books():
                          LEFT JOIN reviews r ON b.id = r.book_id
                 ORDER BY b.date_added DESC
                 """)
-    books = cur.fetchall()
-    conn.close()
+    books = rows_to_dicts(rs)  # Konwersja na słowniki
     return books
+
 
 @app.route("/")
 def home():
+    # ... (bez zmian)
     return render_template("home.html")
+
 
 @app.route("/books")
 def index():
-    db_exists = os.path.exists("books.db")
+    # usunięto 'db_exists = os.path.exists("books.db")'
     books = get_books()
-    return render_template("index.html", books=books, db_exists=db_exists)
+    # Przekazujemy 'client', żeby sprawdzić, czy baza w ogóle istnieje (jest połączona)
+    return render_template("index.html", books=books, db_exists=(client is not None))
+
 
 @app.route("/add", methods=["POST"])
 def add():
+    # ... (cała logika Google Books API bez zmian) ...
     title = request.form["title"].title()
     author = request.form["author"].title()
     category = request.form["category"].title()
@@ -209,6 +220,7 @@ def add():
     else:
         print(f"\n✗ No thumbnail found")
     print(f"\nFinal: {title} | {author} | {category} | {thumbnail}\n")
+    # ... (koniec logiki Google Books API) ...
 
     try:
         add_book(title, author, category, thumbnail)
@@ -217,10 +229,13 @@ def add():
         flash(str(e), "danger")
     return redirect(url_for("index"))
 
+
 def get_book_by_id(book_id):
-    conn = get_connection()
-    cur = conn.cursor()
-    cur.execute("""
+    if not client:
+        return None
+
+    # Zmieniona logika pobierania
+    rs = client.execute("""
                 SELECT b.id,
                        b.title,
                        b.author,
@@ -235,29 +250,36 @@ def get_book_by_id(book_id):
                          LEFT JOIN reviews r ON b.id = r.book_id
                 WHERE b.id = ?
                 """, (book_id,))
-    book = cur.fetchone()
-    conn.close()
+    book = row_to_dict(rs)  # Używamy nowej funkcji pomocniczej
     return book
+
 
 @app.route("/book/<int:book_id>")
 def book_detail(book_id):
+    # ... (bez zmian)
     book = get_book_by_id(book_id)
     return render_template("book.html", book=book)
 
+
 @app.route("/delete/<int:book_id>", methods=["POST"])
 def delete(book_id):
+    # ... (bez zmian)
     remove_book(book_id)
     return redirect(url_for("index"))
 
+
 @app.route("/complete/<int:book_id>", methods=["POST"])
 def complete(book_id):
+    # ... (bez zmian)
     rating = int(request.form["rating"])
     review = request.form["review"]
     complete_book(book_id, rating, review)
     return redirect(url_for("book_detail", book_id=book_id))
 
+
 @app.route("/edit/<int:book_id>", methods=["POST"])
 def edit(book_id):
+    # ... (bez zmian)
     title = request.form["title"].strip() or None
     author = request.form["author"].strip() or None
     category = request.form["category"].strip() or None
@@ -271,8 +293,10 @@ def edit(book_id):
     edit_book(book_id, title, author, category, date_finished)
     return redirect(url_for("index"))
 
+
 @app.route("/book/<int:book_id>/edit", methods=["POST"])
 def edit_book_route(book_id):
+    # ... (bez zmian)
     title = request.form.get("title") or None
     author = request.form.get("author") or None
     category = request.form.get("category") or None
@@ -282,8 +306,10 @@ def edit_book_route(book_id):
     flash(f"Book has been successfully updated!", "success")
     return redirect(url_for("book_detail", book_id=book_id))
 
+
 @app.template_filter('datetimeformat')
 def datetimeformat(value):
+    # ... (bez zmian)
     try:
         return datetime.strptime(value, "%d-%m-%Y").strftime("%Y-%m-%d")
     except:
@@ -293,13 +319,17 @@ def datetimeformat(value):
 @app.errorhandler(404)
 @app.errorhandler(500)
 def handle_error(e):
+    # ... (bez zmian)
     return redirect(url_for("home"))
+
 
 ADMIN_USERNAME = "admin"
 ADMIN_PASSWORD_HASH = b"$2b$12$rHOwLdcakTzBDyJXm4NA1On.94bCm4bNLZaUps7sEBsj.KQxtW5xK"
 
+
 @app.route("/login", methods=["GET", "POST"])
 def login():
+    # ... (bez zmian)
     if session.get("is_admin"):
         return redirect(session.get("pre_login_url") or url_for("index"))
     if request.method == "GET":
@@ -320,8 +350,10 @@ def login():
             return render_template("login.html", error="Invalid username or password")
     return render_template("login.html")
 
+
 @app.route("/logout")
 def logout():
+    # ... (bez zmian)
     session.clear()
     flash("Logged out successfully", "info")
     referrer = request.referrer
@@ -329,8 +361,10 @@ def logout():
         return redirect(referrer)
     return redirect(url_for("home"))
 
+
 @app.route("/init_books_db", methods=["POST"])
 def init_books_db():
+    # ... (logika bez zmian, ale funkcja initialize_database() działa teraz na Turso)
     if not session.get("is_admin"):
         flash("Unauthorized", "danger")
         return redirect(url_for("index"))
@@ -338,11 +372,13 @@ def init_books_db():
     if created:
         flash("Books database created successfully!", "success")
     else:
-        flash("Database already exists!", "info")
+        flash("Database already exists or failed to create!", "info")
     return redirect(url_for("index"))
+
 
 @app.route("/search")
 def search_books():
+    # ... (bez zmian)
     query = request.args.get("q", "")
     if not query:
         return {"error": "Missing query"}, 400
@@ -368,6 +404,7 @@ def search_books():
             for item in data.get("items", [])
         ]
     })
+
 
 if __name__ == "__main__":
     app.run(debug=False)

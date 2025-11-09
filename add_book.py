@@ -1,35 +1,38 @@
-import sqlite3
-
-from db_init import get_connection
+# usunięto import sqlite3
+from db_init import client  # Importujemy klienta Turso
 from datetime import datetime
 
-DB_NAME = "books.db"
+
+# usunięto DB_NAME = "books.db"
+# usunięto 'from db_init import get_connection'
 
 def add_book(title, author, category, thumbnail=None):
-    print("DEBUG:", title, author, category, thumbnail)
-    conn = get_connection()
-    cur = conn.cursor()
+    if not client:
+        raise ValueError("Database client not configured!")
 
-    #check if book already exists
-    cur.execute("SELECT id FROM books WHERE LOWER(title) = LOWER(?)", (title,))
-    existing = cur.fetchone()
+    print("DEBUG:", title, author, category, thumbnail)
+
+    # Zmieniona logika
+    rs = client.execute("SELECT id FROM books WHERE LOWER(title) = LOWER(?)", (title,))
+    existing = rs.rows[0] if rs.rows else None  # Sprawdzamy, czy są jakieś rzędy
 
     if existing:
-        conn.close()
         raise ValueError(f"Book {title} already exists!")
-
 
     date_added = datetime.now().strftime("%d-%m-%Y")
 
-    cur.execute("""
+    client.execute("""
     INSERT INTO books (title, author, category, date_added, thumbnail)
     VALUES (?, ?, ?, ?, ?)
     """, (title, author, category, date_added, thumbnail))
+    # Nie ma conn.commit() ani conn.close() - klient Turso robi to auto
 
-    conn.commit()
-    conn.close()
     print(f"Dodano książkę: {title} ({author})")
 
-# testowo dodaj jedną książkę
+
+# test interaktywny
 if __name__ == "__main__":
-    add_book("Wiedźmin: Ostatnie życzenie", "Andrzej Sapkowski", "fantasy")
+    if client:
+        add_book("Wiedźmin: Ostatnie życzenie", "Andrzej Sapkowski", "fantasy")
+    else:
+        print("Nie można dodać książki, brak połączenia z bazą (sprawdź .env)")
