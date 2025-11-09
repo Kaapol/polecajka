@@ -1,32 +1,33 @@
-# usunięto import sqlite3
 import pandas as pd
 from tabulate import tabulate
-from db_init import client  # Importujemy klienta Turso
-
+from db_init import client
 
 def list_books(show=True):
-    if not client:
+    conn = client
+    if not conn:
         if show:
-            print("❌ Baza danych nie jest połączona.")
+            print("❌ Błąd połączenia w list_books.")
         return 0
 
-    # Zmieniona logika pobierania danych dla Pandas
-    rs = client.execute("SELECT * FROM books")
+    try:
+        # pandas.read_sql_query działa idealnie z obiektem połączenia
+        df = pd.read_sql_query("SELECT * FROM books", conn)
+    except Exception as e:
+        print(f"Błąd odczytu bazy przez pandas: {e}")
+        return 0
+    finally:
+        if conn:
+            conn.close() # Zawsze zamykaj połączenie
 
-    if not rs.rows:
+    if df.empty:
         if show:
-            print(f"❌ No books found.")
+            print(f"❌ Nie znaleziono żadnych książek.")
         return 0
 
-    # Tworzymy DataFrame ręcznie z wyników Turso
-    df = pd.DataFrame(rs.rows, columns=rs.columns)
-
-    # reszta bez zmian
     if show:
         print(tabulate(df, headers="keys", tablefmt="grid", showindex=False))
 
     return len(df)
-
 
 if __name__ == "__main__":
     list_books()

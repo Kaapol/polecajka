@@ -1,30 +1,31 @@
-# usunięto import sqlite3
-from db_init import client  # Importujemy klienta Turso
+from db_init import client
 
 
-def remove_book(id):
-    if not client:
+def remove_book(book_id):
+    if not conn:
+        print("Błąd połączenia w remove_book")
         return
 
-    # usunięto conn = sqlite3.connect...
-    # usunięto conn.execute("PRAGMA...")
-    # usunięto cur = conn.cursor()
+    try:
+        cur = conn.cursor()
+        # Klucze obce są włączone w get_connection(), więc recenzje usuną się kaskadowo
+        cur.execute("DELETE FROM books WHERE id = ?", (book_id,))
 
-    rs = client.execute("DELETE FROM books WHERE id = ?", (id,))
+        conn.commit()
 
-    # Zmieniamy 'cur.rowcount' na 'rs.rows_affected'
-    if rs.rows_affected == 0:
-        print(f"\n❌ No book found with id {id}")
-    else:
-        print(f"\n✅ A book with ID: {id} has been removed (and its reviews cascaded).")
+        if cur.rowcount == 0:
+            print(f"❌ Nie znaleziono książki o ID {book_id}")
+        else:
+            print(f"✅ Usunięto książkę o ID {book_id} (wraz z recenzjami).")
 
-    # usunięto conn.commit()
-    # usunięto conn.close()
+    except Exception as e:
+        conn.rollback()
+        print(f"Błąd w remove_book: {e}")
+
+    finally:
+        if conn:
+            conn.close()
 
 
-# testowo usun jedną książkę
 if __name__ == "__main__":
-    if client:
-        remove_book(1)
-    else:
-        print("Brak połączenia z bazą.")
+    remove_book(999)  # Przetestuj usunięcie nieistniejącej książki
