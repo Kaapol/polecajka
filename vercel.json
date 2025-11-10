@@ -1,9 +1,4 @@
 {
     "buildCommand": "pip install -r requirements.txt",
-    "rewrites": [
-        {
-            "source": "/(.*)",
-            "destination": "/app.py"
-        }
-    ]
+    "devCommand": "gunicorn app:app"
 }
