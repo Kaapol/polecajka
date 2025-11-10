@@ -32,7 +32,7 @@ body {
 /* === MAIN CONTENT === */
 main {
   flex: 1;
-  padding: 40px;
+  padding: 20px;
   animation: fadeIn 0.4s ease-in;
 }
 
@@ -368,8 +368,8 @@ input[type="range"]::-webkit-slider-thumb:hover {
 .book-container {
     display: flex;
     flex-direction: column;
-    gap: 30px;
-    padding: 40px;
+    gap: 20px;
+    padding: 20px;
     max-width: 1200px;
     margin: 0 auto;
     align-items: center;
@@ -1064,7 +1064,7 @@ body.dark-mode .moon-icon {
         padding: 20px;
     }
     .book-container {
-        padding: 20px 10px;
+        padding: 5px 5px;
         gap: 20px;
     }
 
