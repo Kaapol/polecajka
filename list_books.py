@@ -1,17 +1,27 @@
-import sqlite3
 import pandas as pd
 from tabulate import tabulate
+from db_init import client
 
 def list_books(show=True):
-    conn = sqlite3.connect("books.db") #connect
+    conn = client
+    if not conn:
+        if show:
+            print("❌ Błąd połączenia w list_books.")
+        return 0
 
-    df = pd.read_sql_query("SELECT * FROM books", conn)
-
-    conn.close()
+    try:
+        # pandas.read_sql_query działa idealnie z obiektem połączenia
+        df = pd.read_sql_query("SELECT * FROM books", conn)
+    except Exception as e:
+        print(f"Błąd odczytu bazy przez pandas: {e}")
+        return 0
+    finally:
+        if conn:
+            conn.close() # Zawsze zamykaj połączenie
 
     if df.empty:
         if show:
-            print(f"❌ No books found.")
+            print(f"❌ Nie znaleziono żadnych książek.")
         return 0
 
     if show:

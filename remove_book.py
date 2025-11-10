@@ -1,21 +1,28 @@
-import sqlite3
-
-def remove_book(id):
-    conn = sqlite3.connect("books.db")
-    conn.execute("PRAGMA foreign_keys = ON")  # <--- to musi być tu
-    cur = conn.cursor()
-
-    cur.execute("DELETE FROM books WHERE id = ?", (id,))
-
-    if cur.rowcount == 0:
-        print(f"\n❌ No book found with id {id}")
-    else:
-        print(f"\n✅ A book with ID: {id} has been removed (and its reviews cascaded).")
-
-    conn.commit()
-    conn.close()
+from db_init import client
 
 
-# testowo usun jedną książkę
+def remove_book(book_id):
+    if not client:
+        print("❌ Błąd: brak połączenia z bazą")
+        return
+
+    try:
+        # Wykonaj DELETE
+        result = client.execute("DELETE FROM books WHERE id = ?", (book_id,))
+
+        # Sprawdź czy coś usunięto
+        rows_affected = getattr(result, 'rows_affected', 0)
+
+        if rows_affected == 0:
+            print(f"❌ Nie znaleziono książki o ID {book_id}")
+        else:
+            print(f"✅ Usunięto książkę o ID {book_id} (wraz z recenzjami).")
+
+    except Exception as e:
+        print(f"❌ Błąd w remove_book: {e}")
+        import traceback
+        traceback.print_exc()
+
+
 if __name__ == "__main__":
-    remove_book(1)
+    remove_book(999)  # Test

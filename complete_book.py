@@ -1,66 +1,37 @@
-import sqlite3
 from datetime import datetime
+from db_init import client
+import libsql_client
 
-DB_NAME = "books.db"
 
 def complete_book(book_id, rating, review):
-    # połączenie z DB
-    conn = sqlite3.connect(DB_NAME)
-    conn.row_factory = sqlite3.Row
-    cur = conn.cursor()
-    cur.execute("PRAGMA foreign_keys = ON")  # włącz klucze obce
+    if not client: return
 
-    # check if there is review
-    cur.execute("""
-        SELECT date_finished
-        FROM reviews
-        WHERE id = ?
-    """, (book_id,))
+    today = datetime.now().strftime("%d-%m-%Y")
 
-    existing = cur.fetchone()
+    # Używamy transakcji batch dla bezpieczeństwa
+    stmts = [
+        libsql_client.Statement("UPDATE books SET status = 'Completed' WHERE id = ?", (book_id,))
+    ]
 
-    if existing and existing["date_finished"]:
-        # Jeśli istnieje — aktualizuj
-        cur.execute("""
-                    UPDATE reviews
-                    SET rating        = ?,
-                        review        = ?
-                    WHERE book_id = ?
-                    """, (rating, review, book_id))
-        print(f"🔁 Updated review for book ID {book_id}")
+    # Sprawdź czy recenzja istnieje
+    rs = client.execute("SELECT id FROM reviews WHERE book_id = ?", (book_id,))
+    if rs.rows:
+        stmts.append(libsql_client.Statement("""
+            UPDATE reviews SET rating = ?, review = ?, date_finished = ? WHERE book_id = ?
+        """, (rating, review, today, book_id)))
     else:
-        #Jeśli nie ma — dodaj nowy wpis
-        date_finished = datetime.now().strftime("%d-%m-%Y")
+        stmts.append(libsql_client.Statement("""
+            INSERT INTO reviews (book_id, rating, review, date_finished) VALUES (?, ?, ?, ?)
+        """, (book_id, rating, review, today)))
 
-        cur.execute("""
-                    UPDATE book
-                    SET status = 'Completed'
-                    WHERE id = ?
-                    """, (book_id,))
-        print(f"✅ Added new review for book ID {book_id}")
+    # Potrzebny import Statement na górze jeśli używamy batch w ten sposób,
+    # ale prościej zrobić dwa execute jeśli nie importujemy Statement:
+    client.execute("UPDATE books SET status = 'Completed' WHERE id = ?", (book_id,))
+    if rs.rows:
+        client.execute("UPDATE reviews SET rating = ?, review = ?, date_finished = ? WHERE book_id = ?",
+                       (rating, review, today, book_id))
+    else:
+        client.execute("INSERT INTO reviews (book_id, rating, review, date_finished) VALUES (?, ?, ?, ?)",
+                       (book_id, rating, review, today))
 
-        if existing:
-            #exists but with no date
-            cur.execute("""
-            UPDATE reviews
-            SET rating        = ?,
-                review        = ?,
-                date_finished = ?
-                WHERE book_id = ?
-            """, (rating, review, date_finished, book_id))
-        else:
-            cur.execute("""
-                INSERT INTO reviews (book_id, rating, review, date_finished)
-                    VALUES (?, ?, ?, ?)
-            """, (book_id, rating, review, date_finished))
-
-    conn.commit()
-    conn.close()
-    print(f"✅ Book ID {book_id} marked as completed with review!")
-
-# test interaktywny
-if __name__ == "__main__":
-    book_id = int(input("Enter book ID to mark as completed: "))
-    rating = int(input("Your rating (0-10): "))
-    review = input("Your review: ")
-    complete_book(book_id, rating, review)
+    print(f"✅ Completed book {book_id}")
