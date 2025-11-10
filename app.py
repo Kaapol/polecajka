@@ -60,7 +60,147 @@ def add():
     category = request.form["category"].title()
     thumbnail = None  # Twoja logika API powinna to znaleźć
 
+    def normalize_text(text):
     # ... (Reszta logiki API) ...
+        import re
+        if not text:
+            return ""
+        text = text.lower()
+        text = re.sub(r'[^\w\s]', ' ', text)
+        text = ' '.join(text.split())
+        return text
+    def get_key_words(text):
+        stop_words = {'the', 'a', 'an', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for', 'of', 'by'}
+        words = normalize_text(text).split()
+        return [w for w in words if w not in stop_words and len(w) > 2]
+    def check_match(book_title, book_authors, search_title, search_author):
+        norm_book_title = normalize_text(book_title)
+        norm_search_title = normalize_text(search_title)
+        search_title_words = set(get_key_words(search_title))
+        book_title_words = set(get_key_words(book_title))
+        if not search_title_words:
+            title_match = 0
+        else:
+            common_words = search_title_words.intersection(book_title_words)
+            title_match = len(common_words) / len(search_title_words)
+        author_match = False
+        if book_authors:
+            norm_search_author = normalize_text(search_author)
+            search_author_words = set(get_key_words(search_author))
+            for author in book_authors:
+                norm_book_author = normalize_text(author)
+                if norm_search_author == norm_book_author:
+                    author_match = True
+                    break
+                if search_author_words:
+                    book_author_words = set(get_key_words(author))
+                    common = search_author_words.intersection(book_author_words)
+                    if len(common) >= 1:
+                        author_match = True
+                        break
+        score = 0
+        if title_match >= 0.5:
+            score += int(title_match * 60)
+        if author_match:
+            score += 40
+        return score > 40, score
+    search_queries = []
+    search_queries.append(f'"{title}" "{author}"')
+    search_queries.append(f'{title} {author}')
+    search_queries.append(f'intitle:{title} inauthor:{author}')
+    search_queries.append(f'"{title}"')
+    author_words = get_key_words(author)
+    if author_words:
+        search_queries.append(f'{title} {" ".join(author_words)}')
+    title_words = get_key_words(title)
+    if len(title_words) >= 2:
+        search_queries.append(f'{" ".join(title_words[:3])} {author}')
+    if title_words:
+        search_queries.append(f'{title_words[0]} {author}')
+    print(f"\n=== Searching for: {title} by {author} ===")
+    best_match = None
+    best_score = 0
+    url = "https://www.googleapis.com/books/v1/volumes"
+    for i, query in enumerate(search_queries):
+        print(f"\nStrategy {i + 1}: {query}")
+        params = {
+            "q": query,
+            "maxResults": 15,
+            "printType": "books",
+            "key": GOOGLE_BOOKS_API_KEY,
+            "langRestrict": "",
+        }
+        try:
+            resp = requests.get(url, params=params, timeout=10)
+            if resp.status_code == 200:
+                data = resp.json()
+                items = data.get("items", [])
+                print(f"  Found {len(items)} results")
+                for idx, volume in enumerate(items):
+                    volume_info = volume.get("volumeInfo", {})
+                    book_title = volume_info.get("title", "")
+                    book_authors = volume_info.get("authors", [])
+                    image_links = volume_info.get("imageLinks", {})
+                    current_thumbnail = (
+                            image_links.get("thumbnail") or
+                            image_links.get("smallThumbnail") or
+                            image_links.get("small") or
+                            image_links.get("medium")
+                    )
+                    if not current_thumbnail:
+                        continue
+                    is_match, score = check_match(book_title, book_authors, title, author)
+                    author_str = ", ".join(book_authors) if book_authors else "Unknown"
+                    print(
+                        f"    [{idx + 1}] '{book_title}' by {author_str} - Score: {score} {'✓ MATCH' if is_match else '✗'}")
+                    if is_match and score > best_score:
+                        best_score = score
+                        best_match = current_thumbnail
+                        print(f"      → New best match! (score: {score})")
+                    if score >= 90:
+                        print(f"      → Excellent match found, stopping search")
+                        break
+                if best_score >= 70:
+                    print(f"\n✓ Good match found (score: {best_score}), skipping remaining strategies")
+                    break
+            else:
+                print(f"  API error: {resp.status_code}")
+        except requests.exceptions.RequestException as e:
+            print(f"  Request error: {e}")
+            continue
+    if not best_match and best_score < 30:
+        print(f"\n⚠ No good match found (best score: {best_score}), trying fallback...")
+        fallback_query = f'{title} {author}'
+        params = {
+            "q": fallback_query,
+            "maxResults": 5,
+            "printType": "books",
+            "key": GOOGLE_BOOKS_API_KEY
+        }
+        try:
+            resp = requests.get(url, params=params, timeout=10)
+            if resp.status_code == 200:
+                data = resp.json()
+                items = data.get("items", [])
+                for volume in items:
+                    volume_info = volume.get("volumeInfo", {})
+                    image_links = volume_info.get("imageLinks", {})
+                    fallback_thumbnail = (
+                            image_links.get("thumbnail") or
+                            image_links.get("smallThumbnail")
+                    )
+                    if fallback_thumbnail:
+                        best_match = fallback_thumbnail
+                        print(f"  Using fallback: {volume_info.get('title', 'Unknown')}")
+                        break
+        except:
+            pass
+    if best_match:
+        thumbnail = best_match.replace("http://", "https://")
+        print(f"\n✓ Final thumbnail found (score: {best_score})")
+    else:
+        print(f"\n✗ No thumbnail found")
+    print(f"\nFinal: {title} | {author} | {category} | {thumbnail}\n")
 
     try:
         add_book(title, author, category, thumbnail)
