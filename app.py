@@ -149,7 +149,7 @@ def add():
                 resp = None
                 for attempt in range(3):
                     try:
-                        resp = requests.get(url, params=params, timeout=30)
+                        resp = requests.get(url, params=params, timeout=30, headers={'User-Agent': 'Mozilla/5.0'})
                         break  # Jeśli sukces, wyjedź z pętli retry
                     except (requests.exceptions.Timeout, requests.exceptions.ConnectionError) as e:
                         if attempt < 2:
