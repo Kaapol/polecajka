@@ -57,6 +57,9 @@ def index():
     return render_template("index.html", books=books, db_exists=db_exists)
 
 
+import time
+
+
 @app.route("/add", methods=["POST"])
 def add():
     title = request.form["title"].title()
@@ -146,16 +149,17 @@ def add():
                 resp = None
                 for attempt in range(3):
                     try:
-                        resp = requests.get(url, params=params, timeout=15)
+                        resp = requests.get(url, params=params, timeout=30)
                         break  # Jeśli sukces, wyjedź z pętli retry
-                    except requests.exceptions.Timeout:
+                    except (requests.exceptions.Timeout, requests.exceptions.ConnectionError) as e:
                         if attempt < 2:
-                            print(f"  Timeout, retrying... (attempt {attempt + 1}/3)")
-                            time.sleep(1)
+                            print(f"  Timeout/Connection error, retrying... (attempt {attempt + 1}/3)")
+                            time.sleep(2)
                         else:
-                            raise  # Jeśli 3 razy timeout, wyrzuć błąd
+                            print(f"  Failed after 3 attempts")
+                            continue  # Pomiń ten query, idź do następnego
 
-                if resp.status_code == 200:
+                if resp and resp.status_code == 200:
                     data = resp.json()
                     items = data.get("items", [])
                     print(f"  Found {len(items)} results")
@@ -186,7 +190,7 @@ def add():
                     if best_score >= 70:
                         print(f"\n✓ Good match found (score: {best_score}), skipping remaining strategies")
                         break
-                else:
+                elif resp:
                     print(f"  API error: {resp.status_code}")
             except requests.exceptions.RequestException as e:
                 print(f"  Request error: {e}")
