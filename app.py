@@ -10,7 +10,7 @@ from db_init import get_client, initialize_database, rs_to_dicts, row_to_dict, i
 from urllib.parse import urlparse, urljoin, quote
 from dotenv import load_dotenv
 import requests
-import watch
+import time
 
 load_dotenv()
 GOOGLE_BOOKS_API_KEY = os.getenv("GOOGLE_BOOKS_API_KEY")
@@ -75,10 +75,12 @@ def add():
             text = re.sub(r'[^\w\s]', ' ', text)
             text = ' '.join(text.split())
             return text
+
         def get_key_words(text):
             stop_words = {'the', 'a', 'an', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for', 'of', 'by'}
             words = normalize_text(text).split()
             return [w for w in words if w not in stop_words and len(w) > 2]
+
         def check_match(book_title, book_authors, search_title, search_author):
             norm_book_title = normalize_text(book_title)
             norm_search_title = normalize_text(search_title)
@@ -110,6 +112,7 @@ def add():
             if author_match:
                 score += 40
             return score > 40, score
+
         search_queries = []
         search_queries.append(f'"{title}" "{author}"')
         search_queries.append(f'{title} {author}')
@@ -123,10 +126,12 @@ def add():
             search_queries.append(f'{" ".join(title_words[:3])} {author}')
         if title_words:
             search_queries.append(f'{title_words[0]} {author}')
+
         print(f"\n=== Searching for: {title} by {author} ===")
         best_match = None
         best_score = 0
         url = "https://www.googleapis.com/books/v1/volumes"
+
         for i, query in enumerate(search_queries):
             print(f"\nStrategy {i + 1}: {query}")
             params = {
@@ -137,7 +142,19 @@ def add():
                 "langRestrict": "",
             }
             try:
-                resp = requests.get(url, params=params, timeout=10)
+                # RETRY LOGIC - spróbuj 3 razy
+                resp = None
+                for attempt in range(3):
+                    try:
+                        resp = requests.get(url, params=params, timeout=15)
+                        break  # Jeśli sukces, wyjedź z pętli retry
+                    except requests.exceptions.Timeout:
+                        if attempt < 2:
+                            print(f"  Timeout, retrying... (attempt {attempt + 1}/3)")
+                            time.sleep(1)
+                        else:
+                            raise  # Jeśli 3 razy timeout, wyrzuć błąd
+
                 if resp.status_code == 200:
                     data = resp.json()
                     items = data.get("items", [])
@@ -174,6 +191,7 @@ def add():
             except requests.exceptions.RequestException as e:
                 print(f"  Request error: {e}")
                 continue
+
         if not best_match and best_score < 30:
             print(f"\n⚠ No good match found (best score: {best_score}), trying fallback...")
             fallback_query = f'{title} {author}'
@@ -184,7 +202,17 @@ def add():
                 "key": GOOGLE_BOOKS_API_KEY
             }
             try:
-                resp = requests.get(url, params=params, timeout=10)
+                # RETRY LOGIC DLA FALLBACK
+                for attempt in range(3):
+                    try:
+                        resp = requests.get(url, params=params, timeout=15)
+                        break
+                    except requests.exceptions.Timeout:
+                        if attempt < 2:
+                            time.sleep(1)
+                        else:
+                            raise
+
                 if resp.status_code == 200:
                     data = resp.json()
                     items = data.get("items", [])
@@ -201,6 +229,7 @@ def add():
                             break
             except:
                 pass
+
         if best_match:
             thumbnail = best_match.replace("http://", "https://")
             print(f"\n✓ Final thumbnail found (score: {best_score})")
