@@ -1,4 +1,8 @@
 {
     "buildCommand": "pip install -r requirements.txt",
-    "devCommand": "gunicorn app:app"
+    "functions": {
+        "index.py": {
+            "runtime": "python3.12"
+        }
+    }
 }
