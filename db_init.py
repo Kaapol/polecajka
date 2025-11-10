@@ -28,6 +28,25 @@ else:
     print("⚠️  OSTRZEŻENIE: Brak zmiennych TURSO. Baza nie zadziała.")
 
 
+def is_database_initialized(client):
+    """Sprawdzaj czy istnieje tabela 'books' (marker inicjalizacji)"""
+    if not client:
+        return False
+
+    try:
+        # Jeśli istnieje ta tabela, to DB jest zainicjalizowana
+        rs = client.execute("""
+            SELECT name FROM sqlite_master 
+            WHERE type='table' AND name='books'
+        """)
+        tables = rs_to_dicts(rs)
+        db_init = len(tables) > 0
+        print(f"Database initialized check: {db_init}")
+        return db_init
+    except Exception as e:
+        print(f"Error checking database: {e}")
+        return False
+
 def get_client():
     """Zwraca JEDYNEGO klienta bazy."""
     return client
@@ -112,6 +131,7 @@ def initialize_database():
         import traceback
         traceback.print_exc()
         return False
+
 
 
 if __name__ == "__main__":
