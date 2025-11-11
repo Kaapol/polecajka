@@ -365,13 +365,40 @@ def init_books_db():
 def search_books():
     query = request.args.get("q", "")
     if not query: return {"error": "Missing query"}, 400
+
     url = "https://www.googleapis.com/books/v1/volumes"
-    params = {"q": query, "maxResults": 8, "printType": "books", "key": GOOGLE_BOOKS_API_KEY}
-    resp = requests.get(url, params=params)
-    if resp.status_code != 200: return {"error": "API failed"}, 500
+
+    params = {
+        "q": query,
+        "maxResults": 15,
+        "printType": "books",
+        "key": GOOGLE_BOOKS_API_KEY,
+        "langRestrict": "",
+        "orderBy": "relevance"
+    }
+
+    resp = None
+    for attempt in range(3):
+        try:
+            resp = requests.get(
+                url,
+                params=params,
+                timeout=30,
+                headers={'User-Agent': 'Mozilla/5.0'}
+            )
+            break
+        except (requests.exceptions.Timeout, requests.exceptions.ConnectionError) as e:
+            if attempt < 2:
+                print(f"Retry attempt {attempt + 1}/3")
+                time.sleep(1)
+            else:
+                return {"error": "API timeout"}, 500
+
+    if not resp or resp.status_code != 200:
+        return {"error": "API failed"}, 500
+
     data = resp.json()
 
-    # TU BYŁ BŁĄD - brakowało 'categories' w tym słowniku poniżej
     return jsonify({"results": [
         {
             "title": i["volumeInfo"].get("title", ""),
