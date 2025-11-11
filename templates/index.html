@@ -120,7 +120,7 @@
         timer = setTimeout(async () => {
           // TUTAJ DODAJESZ timestamp żeby wymusić brak cache'u
           const timestamp = Date.now();
-          const res = await fetch(`/search?q=${encodeURIComponent(query)}&_t=${timestamp}`);
+          const res = await fetch(`/search?q=intitle:${encodeURIComponent(query)}&_t=${timestamp}`);
           const data = await res.json();
           const results = data.results || [];
 
