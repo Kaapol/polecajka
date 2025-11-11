@@ -36,7 +36,7 @@
             <a href="/movies">Movies</a>
             <a href="/series">TV Series</a>
 
-            {% if session.get('is_admin') %}
+            {% if session.get('is_admin') or session.get('user_id') %}
                 <a href="/logout" class="auth-link logout">Logout</a>
             {% else %}
                 <a href="/login" class="auth-link login">Login</a>

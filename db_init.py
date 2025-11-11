@@ -10,10 +10,9 @@ DB_TOKEN = os.environ.get("TURSO_AUTH_TOKEN")
 client = None
 if DB_URL and DB_TOKEN:
     try:
-        # KLUCZOWA ZMIANA: Zamień libsql:// na https://
         url_https = DB_URL.replace("libsql://", "https://")
 
-        # Używamy klienta SYNCHRONICZNEGO z HTTPS
+        #klucz synchroniczny z https
         client = libsql_client.create_client_sync(
             url=url_https,
             auth_token=DB_TOKEN
@@ -96,16 +95,26 @@ def initialize_database():
         return False
 
     try:
-        # Wykonaj każde zapytanie osobno (batch może nie działać poprawnie)
+        client.execute("""
+            CREATE TABLE IF NOT EXISTS users (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                username TEXT UNIQUE NOT NULL,
+                password_hash TEXT NOT NULL,
+                created_at TEXT DEFAULT CURRENT_TIMESTAMP
+            )
+        """)
+
         client.execute("""
             CREATE TABLE IF NOT EXISTS books (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_id INTEGER NOT NULL,
                 title TEXT NOT NULL,
                 author TEXT,
                 category TEXT,
                 status TEXT DEFAULT 'To Read',
                 date_added TEXT,
-                thumbnail TEXT
+                thumbnail TEXT,
+                FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
             )
         """)
 

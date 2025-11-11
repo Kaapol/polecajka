@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="login-container">
+    <h2>Create Account</h2>
+    <form method="POST" action="{{ url_for('register') }}" id="register-form">
+        <div class="form-group">
+            <label for="username">Username</label>
+            <input type="text" id="username" name="username" placeholder="Choose a username" required>
+        </div>
+
+        <div class="form-group">
+            <label for="password">Password</label>
+            <input type="password" id="password" name="password" placeholder="Enter password (min. 6 chars)" required>
+        </div>
+
+        <div class="form-group">
+            <label for="confirm_password">Confirm Password</label>
+            <input type="password" id="confirm_password" name="confirm_password" placeholder="Repeat password" required>
+        </div>
+
+        <!-- Używamy tego samego ID przycisku dla spójnego stylu -->
+        <button id="login-button" type="submit">Register</button>
+
+        {% if error %}
+            <p class="error">{{ error }}</p>
+        {% endif %}
+        
+        <!-- Dodatkowy komunikat błędu dla walidacji JS -->
+        <p class="error" id="password-error" style="display: none;"></p>
+    </form>
+    
+    <div class="auth-switch">
+        <p>Already have an account? <a href="{{ url_for('login') }}" class="auth-link login">Login here</a></p>
+    </div>
+</div>
+
+<script>
+    // Prosta walidacja po stronie klienta, żeby sprawdzić, czy hasła pasują
+    document.getElementById('register-form').addEventListener('submit', function(event) {
+        const password = document.getElementById('password').value;
+        const confirmPassword = document.getElementById('confirm_password').value;
+        const errorElement = document.getElementById('password-error');
+
+        if (password !== confirmPassword) {
+            // Zapobiegamy wysłaniu formularza
+            event.preventDefault(); 
+            errorElement.textContent = 'Passwords do not match!';
+            errorElement.style.display = 'block';
+        } else if (password.length < 6) {
+            event.preventDefault();
+            errorElement.textContent = 'Password must be at least 6 characters!';
+            errorElement.style.display = 'block';
+        } else {
+            errorElement.style.display = 'none';
+        }
+    });
+</script>
+{% endblock %}

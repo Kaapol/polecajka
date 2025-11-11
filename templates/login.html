@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% block content %}
 <div class="login-container">
-    <h2>🔒 Admin Login</h2>
+    <h2>🔒 Login</h2>
     <form method="POST" action="{{ url_for('login') }}">
         <div class="form-group">
             <label for="username">Username</label>
@@ -19,5 +19,10 @@
             <p class="error">{{ error }}</p>
         {% endif %}
     </form>
+
+    <!-- Dodany kontener dla lepszego stylowania -->
+    <div class="auth-switch">
+        <p>Don't have an account? <a href="{{ url_for('register') }}" class="auth-link login">Register here</a></p>
+    </div>
 </div>
 {% endblock %}
