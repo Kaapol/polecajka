@@ -361,14 +361,22 @@ def init_books_db():
     return redirect(url_for("index"))
 
 
-@app.route("/search")
-def search_books():
-    query = request.args.get("q", "")
-    if not query: return {"error": "Missing query"}, 400
+@app.route("/debug-search")
+def debug_search():
+    """Endpoint do debugowania - pokaż RAW odpowiedź z Google API"""
+    query = request.args.get("q", "Carrie")
 
     url = "https://www.googleapis.com/books/v1/volumes"
 
-    params = {
+    # Test 1: Bez żadnych extra parametrów
+    params_simple = {
+        "q": query,
+        "maxResults": 15,
+        "key": GOOGLE_BOOKS_API_KEY
+    }
+
+    # Test 2: Z dodatkowymi parametrami
+    params_full = {
         "q": query,
         "maxResults": 15,
         "printType": "books",
@@ -377,36 +385,103 @@ def search_books():
         "orderBy": "relevance"
     }
 
-    resp = None
-    for attempt in range(3):
-        try:
-            resp = requests.get(
-                url,
-                params=params,
-                timeout=30,
-                headers={'User-Agent': 'Mozilla/5.0'}
-            )
-            break
-        except (requests.exceptions.Timeout, requests.exceptions.ConnectionError) as e:
-            if attempt < 2:
-                print(f"Retry attempt {attempt + 1}/3")
-                time.sleep(1)
-            else:
-                return {"error": "API timeout"}, 500
+    try:
+        # Sprawdź oba warianty
+        resp1 = requests.get(url, params=params_simple, timeout=10)
+        resp2 = requests.get(url, params=params_full, timeout=10)
 
-    if not resp or resp.status_code != 200:
-        return {"error": "API failed"}, 500
+        data1 = resp1.json() if resp1.status_code == 200 else {"error": resp1.status_code}
+        data2 = resp2.json() if resp2.status_code == 200 else {"error": resp2.status_code}
 
-    data = resp.json()
+        return jsonify({
+            "query": query,
+            "api_key_exists": bool(GOOGLE_BOOKS_API_KEY),
+            "api_key_length": len(GOOGLE_BOOKS_API_KEY) if GOOGLE_BOOKS_API_KEY else 0,
+            "simple_params": {
+                "url": resp1.url,
+                "status": resp1.status_code,
+                "total_items": data1.get("totalItems", 0),
+                "items_count": len(data1.get("items", [])),
+                "first_3_titles": [
+                    item["volumeInfo"].get("title", "NO TITLE")
+                    for item in data1.get("items", [])[:3]
+                ]
+            },
+            "full_params": {
+                "url": resp2.url,
+                "status": resp2.status_code,
+                "total_items": data2.get("totalItems", 0),
+                "items_count": len(data2.get("items", [])),
+                "first_3_titles": [
+                    item["volumeInfo"].get("title", "NO TITLE")
+                    for item in data2.get("items", [])[:3]
+                ]
+            },
+            "raw_response_simple": data1,
+            "raw_response_full": data2
+        })
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
-    return jsonify({"results": [
-        {
-            "title": i["volumeInfo"].get("title", ""),
-            "authors": i["volumeInfo"].get("authors", []),
-            "categories": i["volumeInfo"].get("categories", []),  # <--- DODAŁEM TO
-            "thumbnail": i["volumeInfo"].get("imageLinks", {}).get("thumbnail", "")
-        } for i in data.get("items", [])
-    ]})
+
+@app.route("/search")
+def search_books():
+    """Normalny endpoint - teraz z logowaniem"""
+    query = request.args.get("q", "")
+    if not query:
+        return {"error": "Missing query"}, 400
+
+    url = "https://www.googleapis.com/books/v1/volumes"
+
+    params = {
+        "q": query,
+        "maxResults": 15,
+        "printType": "books",
+        "key": GOOGLE_BOOKS_API_KEY,
+        "orderBy": "relevance"
+    }
+
+    print(f"🔍 SEARCH REQUEST:")
+    print(f"   Query: {query}")
+    print(f"   API Key exists: {bool(GOOGLE_BOOKS_API_KEY)}")
+    print(f"   Full URL: {url}?{requests.compat.urlencode(params)}")
+
+    try:
+        resp = requests.get(url, params=params, timeout=30, headers={'User-Agent': 'Mozilla/5.0'})
+
+        print(f"📡 RESPONSE:")
+        print(f"   Status: {resp.status_code}")
+        print(f"   URL called: {resp.url}")
+
+        if resp.status_code != 200:
+            print(f"   ERROR: {resp.text}")
+            return {"error": f"API failed with {resp.status_code}"}, 500
+
+        data = resp.json()
+        total_items = data.get("totalItems", 0)
+        items_count = len(data.get("items", []))
+
+        print(f"   Total items: {total_items}")
+        print(f"   Returned items: {items_count}")
+
+        if items_count > 0:
+            print(f"   First result: {data['items'][0]['volumeInfo'].get('title', 'NO TITLE')}")
+
+        results = [
+            {
+                "title": i["volumeInfo"].get("title", ""),
+                "authors": i["volumeInfo"].get("authors", []),
+                "categories": i["volumeInfo"].get("categories", []),
+                "thumbnail": i["volumeInfo"].get("imageLinks", {}).get("thumbnail", "")
+            }
+            for i in data.get("items", [])
+        ]
+
+        return jsonify({"results": results})
+
+    except Exception as e:
+        print(f"❌ EXCEPTION: {str(e)}")
+        return {"error": str(e)}, 500
 
 
 
