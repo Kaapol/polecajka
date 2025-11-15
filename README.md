@@ -1,14 +1,19 @@
 # Polecajka
 Catalog of books, games, movies &amp; more!
 
-# 📚 Book Tracker App (Flask)
+# Book Tracker App (Flask)
 
 A simple Python/Flask project for tracking books - you can add, edit, remove, and mark books as completed.  
 It also includes a **search bar powered by Google Books API** (optional - works only if you have your own API key).
 
+# Working Vercel application
+https://polecajka.vercel.app
+
+# To run locally
+
 ---
 
-## ⚙️ 1. Requirements
+## 1. Requirements
 
 - Python **3.10+**
 - `pip` (Python package manager)
@@ -16,7 +21,7 @@ It also includes a **search bar powered by Google Books API** (optional - works 
 
 ---
 
-## 🧠 2. Clone the Project
+## 2. Clone the Project
 
 Open your terminal and run:
 ```bash
@@ -26,7 +31,7 @@ cd <your_repo>
 
 ---
 
-## 📦 3. Install Dependencies
+## 3. Install Dependencies
 
 Run the following command inside the project folder:
 
@@ -38,7 +43,7 @@ This installs everything your app needs (Flask, bcrypt, requests, dotenv, etc.).
 
 ---
 
-## 🔑 4. Create a `.env` File
+## 4. Create a `.env` File
 
 In the **root directory** of your project, create a file called `.env`
 Then paste the following inside:
@@ -51,7 +56,7 @@ This key is required for the Google Books API search to work.
 
 ---
 
-## 🧙‍♂️ 5. How to Get a Google Books API Key
+## 5. How to Get a Google Books API Key
 
 1. Go to [Google Cloud Console](https://console.cloud.google.com/).
 2. Log in with your Google account.
@@ -65,7 +70,7 @@ This key is required for the Google Books API search to work.
 
 ---
 
-## 🧰 6. Initialize the Database (SQLite)
+## 6. Initialize the Database (SQLite)
 
 This project uses a simple local SQLite database (`db.sqlite3`).
 
@@ -83,12 +88,12 @@ If you want to initilize the database in the app, you need to be logged in as ad
 
 ---
 
-## 🚀 7. Run the Application
+## 7. Run the Application
 
 Start the app with:
 
 ```bash
-python app.py
+python watch.py
 ```
 
 If everything’s fine, you’ll see something like:
@@ -98,11 +103,11 @@ If everything’s fine, you’ll see something like:
 ```
 
 Then open **[http://127.0.0.1:5000](http://127.0.0.1:5000)** in your browser
-and enjoy your local **Book Tracker App** 📚
+and enjoy your local **Book Tracker App**
 
 ---
 
-## 🌍 8. Using the Google Books Search Feature
+## 8. Using the Google Books Search Feature
 
 If your `.env` contains a valid `GOOGLE_API_KEY`,
 you’ll see the **book search bar** which fetches results from Google Books.
@@ -111,7 +116,7 @@ If you don’t provide the key, the app will simply skip this feature — everyt
 
 ---
 
-## 🧹 9. Common Issues & Fixes
+## 9. Common Issues & Fixes
 
 | Problem                           | Solution                                                                                |
 | --------------------------------- | --------------------------------------------------------------------------------------- |
@@ -122,17 +127,17 @@ If you don’t provide the key, the app will simply skip this feature — everyt
 
 ---
 
-## 🎨 10. Extra Features
+## 10. Extra Features
 
-* Supports **dark / light mode** with smooth icon transitions 🌙🌞
+* Supports **dark / light mode** with smooth icon transitions
 * Modern responsive CSS design
 * Clean codebase (easy to expand or restyle)
 
 ---
 
-## 💡 11. Dev Tip
+## 11. Dev Tip
 
-⚠️ Never upload .env to GitHub!
+Never upload .env to GitHub!
 It’s already ignored via .gitignore, so you’re safe - just don’t force add it manually.
 
 To check if `.env` is really ignored by git, run:
@@ -152,9 +157,8 @@ That means you’re good - the file won’t get uploaded.
 
 ---
 
-## ☕ Author
+## Author
 
 Created by **Kapol**
-Fork it, tweak it, break it, fix it - just don’t delete my sun and moon icons 🌞🌙
 
 ---
