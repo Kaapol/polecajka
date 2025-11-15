@@ -19,7 +19,7 @@ app.secret_key = "9e6663d956531a9dbdad7a8e5196119e6d6b8cf8a6154be26834db2789038a
 
 client = get_client()
 
-# Admin credentials (zachowane z oryginalnego kodu)
+# Admin credentials
 ADMIN_USERNAME = "admin"
 ADMIN_PASSWORD_HASH = b"$2b$12$rHOwLdcakTzBDyJXm4NA1On.94bCm4bNLZaUps7sEBsj.KQxtW5xK"
 
@@ -83,7 +83,7 @@ def index():
 
     books = get_books()
     db_exists = is_database_initialized(client)
-    return render_template("index.html", books=books, db_exists=db_exists)
+    return render_template("books.html", books=books, db_exists=db_exists)
 
 
 @app.route("/add", methods=["POST"])
