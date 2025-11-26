@@ -1,11 +1,11 @@
 import sys
 
 #import functions from other files
-from add_book import add_book
-from list_books import list_books
-from remove_book import remove_book
-from complete_book import complete_book
-from edit_book import edit_book
+from add_item import add_book
+from list_items import list_items
+from remove_item import remove_item
+from complete_item import complete_item
+from edit_item import edit_item
 
 import sqlite3
 
@@ -24,7 +24,7 @@ def menu():
         choice = input("\nChoose option: ")
 
         if choice == "1":
-            list_books()
+            list_items()
 
 
         elif choice == "2":
@@ -35,19 +35,19 @@ def menu():
 
 
         elif choice == "3":
-            if list_books(show=False) == 0:
+            if list_items(show=False) == 0:
                 print("❌ No books to remove.")
                 continue
 
             try:
                 book_id = int(input("Enter book ID to remove: "))
-                remove_book(book_id)
+                remove_item(book_id)
             except ValueError:
                 print("❌ ID must be an integer.")
 
 
         elif choice == "4":
-            if list_books(show=False) == 0:
+            if list_items(show=False) == 0:
                 print("❌ No books to mark as complete.")
                 continue
 
@@ -85,10 +85,10 @@ def menu():
 
             review = input("Your review: ")
 
-            complete_book(book_id, rating, review)
+            complete_item(book_id, rating, review)
 
         elif choice == "5":
-            if list_books(show=False) == 0:
+            if list_items(show=False) == 0:
                 print("❌ No books to edit.")
                 continue
 
@@ -115,7 +115,7 @@ def menu():
             author = input("Enter book author: ").title()
             category = input("Enter book category: ").title()
 
-            edit_book(book_id, title, author, category)
+            edit_item(book_id, title, author, category)
 
         elif choice == "6":
             print("Application closed.")

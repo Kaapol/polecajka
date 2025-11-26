@@ -1,16 +1,15 @@
 from flask import Flask, render_template, request, redirect, url_for, session, flash, jsonify
-from edit_book import edit_book, edit_review_date
+from edit_item import edit_item, edit_review_date
 import os
 import bcrypt
-from add_book import add_book
-from remove_book import remove_book
-from complete_book import complete_book
+from add_item import add_item
+from remove_item import remove_item
+from complete_item import complete_item
 from datetime import datetime
 from db_init import get_client, initialize_database, rs_to_dicts, row_to_dict, is_database_initialized
 from urllib.parse import urlparse, urljoin
 from dotenv import load_dotenv
 import requests
-import time
 
 load_dotenv()
 GOOGLE_BOOKS_API_KEY = os.getenv("GOOGLE_BOOKS_API_KEY")
@@ -23,6 +22,9 @@ client = get_client()
 ADMIN_USERNAME = "admin"
 ADMIN_PASSWORD_HASH = b"$2b$12$rHOwLdcakTzBDyJXm4NA1On.94bCm4bNLZaUps7sEBsj.KQxtW5xK"
 
+# Typy itemów
+VALID_TYPES = ['books', 'games', 'movies', 'series']
+
 
 def is_safe_url(target):
     ref_url = urlparse(request.host_url)
@@ -30,24 +32,25 @@ def is_safe_url(target):
     return test_url.scheme in ('http', 'https') and ref_url.netloc == test_url.netloc
 
 
-def get_books():
-    """Zwraca książki dla zalogowanego użytkownika (lub wszystkie dla admina)"""
-    if not client:
+def get_items(item_type):
+    """Zwraca itemy danego typu dla zalogowanego użytkownika (lub wszystkie dla admina)"""
+    if not client or item_type not in VALID_TYPES:
         return []
 
-    # Admin widzi wszystkie książki
+    # Admin widzi wszystkie itemy danego typu
     if session.get('is_admin'):
         try:
             rs = client.execute("""
-                SELECT b.id, b.title, b.author, b.category, b.status,
-                       r.rating, r.review, b.thumbnail
-                FROM books b
-                LEFT JOIN reviews r ON b.id = r.book_id
-                ORDER BY b.date_added DESC
-            """)
+                SELECT i.id, i.title, i.creator, i.category, i.status, i.type,
+                       r.rating, r.review, i.thumbnail, i.date_added
+                FROM items i
+                LEFT JOIN reviews r ON i.id = r.item_id
+                WHERE i.type = ?
+                ORDER BY i.date_added DESC
+            """, (item_type,))
             return rs_to_dicts(rs)
         except Exception as e:
-            print(f"Database error in get_books: {e}")
+            print(f"Database error in get_items: {e}")
             return []
 
     # Zwykły użytkownik widzi tylko swoje
@@ -57,82 +60,21 @@ def get_books():
 
     try:
         rs = client.execute("""
-            SELECT b.id, b.title, b.author, b.category, b.status,
-                   r.rating, r.review, b.thumbnail
-            FROM books b
-            LEFT JOIN reviews r ON b.id = r.book_id
-            WHERE b.user_id = ?
-            ORDER BY b.date_added DESC
-        """, (user_id,))
+            SELECT i.id, i.title, i.creator, i.category, i.status, i.type,
+                   r.rating, r.review, i.thumbnail, i.date_added
+            FROM items i
+            LEFT JOIN reviews r ON i.id = r.item_id
+            WHERE i.type = ? AND i.user_id = ?
+            ORDER BY i.date_added DESC
+        """, (item_type, user_id))
         return rs_to_dicts(rs)
     except Exception as e:
-        print(f"Database error in get_books: {e}")
+        print(f"Database error in get_items: {e}")
         return []
 
 
-@app.route("/")
-def home():
-    return render_template("home.html")
-
-
-@app.route("/books")
-def index():
-    if not session.get('user_id') and not session.get('is_admin'):
-        flash("Please login first", "warning")
-        return redirect(url_for('login'))
-
-    books = get_books()
-    db_exists = is_database_initialized(client)
-    return render_template("books.html", books=books, db_exists=db_exists)
-
-
-@app.route("/add", methods=["POST"])
-def add():
-    if not session.get('user_id') and not session.get('is_admin'):
-        flash("Please login first", "danger")
-        return redirect(url_for('login'))
-
-    # Admin dodaje jako user_id = 0 (specjalny ID)
-    user_id = session.get('user_id', 0)
-
-    title = request.form["title"].title()
-    author = request.form["author"].title()
-    category = request.form["category"].title()
-    thumbnail = request.form.get("thumbnail")
-
-    # Tutaj możesz dodać logikę szukania thumbnail (skopiuj z poprzedniej wersji)
-
-    try:
-        add_book_with_user(user_id, title, author, category, thumbnail)
-        flash(f"Book '{title}' added successfully!", "success")
-    except Exception as e:
-        flash(str(e), "danger")
-    return redirect(url_for("index"))
-
-
-def add_book_with_user(user_id, title, author, category, thumbnail=None):
-    """Dodaje książkę dla konkretnego użytkownika"""
-    if not client:
-        raise Exception("No DB client")
-
-    # Sprawdź duplikat DLA TEGO UŻYTKOWNIKA
-    rs = client.execute(
-        "SELECT id FROM books WHERE LOWER(title) = LOWER(?) AND user_id = ?",
-        (title, user_id)
-    )
-    if rs.rows:
-        raise ValueError(f"Book '{title}' already exists in your library!")
-
-    date_added = datetime.now().strftime("%d-%m-%Y")
-    client.execute("""
-        INSERT INTO books (user_id, title, author, category, date_added, thumbnail)
-        VALUES (?, ?, ?, ?, ?, ?)
-    """, (user_id, title, author, category, date_added, thumbnail))
-    print(f"✅ Added: {title} for user {user_id}")
-
-
-def get_book_by_id(book_id):
-    """Zwraca książkę TYLKO jeśli należy do zalogowanego użytkownika (lub admin)"""
+def get_item_by_id(item_id):
+    """Zwraca item TYLKO jeśli należy do zalogowanego użytkownika (lub admin)"""
     if not client:
         return None
 
@@ -140,12 +82,12 @@ def get_book_by_id(book_id):
     if session.get('is_admin'):
         try:
             rs = client.execute("""
-                SELECT b.id, b.title, b.author, b.category, b.status, b.date_added, b.thumbnail,
+                SELECT i.id, i.title, i.creator, i.category, i.status, i.date_added, i.thumbnail, i.type,
                        r.date_finished, r.rating, r.review
-                FROM books b
-                LEFT JOIN reviews r ON b.id = r.book_id
-                WHERE b.id = ?
-            """, (book_id,))
+                FROM items i
+                LEFT JOIN reviews r ON i.id = r.item_id
+                WHERE i.id = ?
+            """, (item_id,))
             return row_to_dict(rs)
         except Exception as e:
             print(f"Database error: {e}")
@@ -158,79 +100,165 @@ def get_book_by_id(book_id):
 
     try:
         rs = client.execute("""
-            SELECT b.id, b.title, b.author, b.category, b.status, b.date_added, b.thumbnail,
+            SELECT i.id, i.title, i.creator, i.category, i.status, i.date_added, i.thumbnail, i.type,
                    r.date_finished, r.rating, r.review
-            FROM books b
-            LEFT JOIN reviews r ON b.id = r.book_id
-            WHERE b.id = ? AND b.user_id = ?
-        """, (book_id, user_id))
+            FROM items i
+            LEFT JOIN reviews r ON i.id = r.item_id
+            WHERE i.id = ? AND i.user_id = ?
+        """, (item_id, user_id))
         return row_to_dict(rs)
     except Exception as e:
         print(f"Database error: {e}")
         return None
 
 
-@app.route("/book/<int:book_id>")
-def book_detail(book_id):
+def add_item_with_user(user_id, item_type, title, creator, category, thumbnail=None):
+    """Dodaje item dla konkretnego użytkownika"""
+    if not client:
+        raise Exception("No DB client")
+
+    if item_type not in VALID_TYPES:
+        raise ValueError(f"Invalid item type: {item_type}")
+
+    # Sprawdź duplikat DLA TEGO UŻYTKOWNIKA I TYPU
+    rs = client.execute(
+        "SELECT id FROM items WHERE LOWER(title) = LOWER(?) AND user_id = ? AND type = ?",
+        (title, user_id, item_type)
+    )
+    if rs.rows:
+        raise ValueError(f"'{title}' already exists in your {item_type}!")
+
+    date_added = datetime.now().strftime("%d-%m-%Y")
+    client.execute("""
+        INSERT INTO items (user_id, type, title, creator, category, date_added, thumbnail, status)
+        VALUES (?, ?, ?, ?, ?, ?, ?, 'To Read')
+    """, (user_id, item_type, title, creator, category, date_added, thumbnail))
+    print(f"✅ Added: {title} ({item_type}) for user {user_id}")
+
+
+@app.route("/")
+def home():
+    return render_template("home.html")
+
+
+# === DYNAMICZNE ROUTES DLA KAŻDEGO TYPU ===
+@app.route("/books")
+def books_list():
+    if not session.get('user_id') and not session.get('is_admin'):
+        flash("Please login first", "warning")
+        return redirect(url_for('login'))
+    return items_list_view('books')
+
+
+@app.route("/games")
+def games_list():
+    if not session.get('user_id') and not session.get('is_admin'):
+        flash("Please login first", "warning")
+        return redirect(url_for('login'))
+    return items_list_view('games')
+
+
+@app.route("/movies")
+def movies_list():
+    if not session.get('user_id') and not session.get('is_admin'):
+        flash("Please login first", "warning")
+        return redirect(url_for('login'))
+    return items_list_view('movies')
+
+
+@app.route("/series")
+def series_list():
+    if not session.get('user_id') and not session.get('is_admin'):
+        flash("Please login first", "warning")
+        return redirect(url_for('login'))
+    return items_list_view('series')
+
+
+def items_list_view(item_type):
+    """Wspólna logika dla listy itemów"""
+    items = get_items(item_type)
+    db_exists = is_database_initialized(client)
+    return render_template("items_list.html", items=items, db_exists=db_exists, item_type=item_type)
+
+
+@app.route("/add/<string:item_type>", methods=["POST"])
+def add_item_route(item_type):
+    if item_type not in VALID_TYPES:
+        return redirect(url_for('home'))
+
+    if not session.get('user_id') and not session.get('is_admin'):
+        flash("Please login first", "danger")
+        return redirect(url_for('login'))
+
+    user_id = session.get('user_id', 0)
+    title = request.form["title"].title()
+    creator = request.form["creator"].title()
+    category = request.form["category"].title()
+    thumbnail = request.form.get("thumbnail", "")
+
+    try:
+        add_item_with_user(user_id, item_type, title, creator, category, thumbnail)
+        flash(f"'{title}' added successfully!", "success")
+    except Exception as e:
+        flash(str(e), "danger")
+
+    # Redirect do odpowiedniej listy
+    return redirect(url_for(f'{item_type}_list'))
+
+
+@app.route("/item/<int:item_id>")
+def item_detail(item_id):
     if not session.get('user_id') and not session.get('is_admin'):
         flash("Please login first", "warning")
         return redirect(url_for('login'))
 
-    book = get_book_by_id(book_id)
-    if not book:
-        flash("Book not found", "danger")
-        return redirect(url_for("index"))
-    return render_template("book.html", book=book)
+    item = get_item_by_id(item_id)
+    if not item:
+        flash("Item not found", "danger")
+        return redirect(url_for("home"))
+
+    # Używamy item zamiast book
+    return render_template("item.html", item=item)
 
 
-@app.route("/delete/<int:book_id>", methods=["POST"])
-def delete(book_id):
+@app.route("/item/<int:item_id>/delete", methods=["POST"])
+def delete_item(item_id):
     if not session.get('user_id') and not session.get('is_admin'):
         return redirect(url_for('login'))
 
-    book = get_book_by_id(book_id)
-    if book:
-        remove_book(book_id)
+    item = get_item_by_id(item_id)
+    if item:
+        item_type = item.get('type', 'books')
+        remove_item(item_id)
+        return redirect(url_for(f'{item_type}_list'))
 
-    return redirect(url_for("index"))
+    return redirect(url_for("home"))
 
 
-@app.route("/complete/<int:book_id>", methods=["POST"])
-def complete(book_id):
+@app.route("/item/<int:item_id>/complete", methods=["POST"])
+def complete_item_route(item_id):
     if not session.get('user_id') and not session.get('is_admin'):
         return redirect(url_for('login'))
 
-    book = get_book_by_id(book_id)
-    if book:
-        complete_book(book_id, int(request.form["rating"]), request.form["review"])
+    item = get_item_by_id(item_id)
+    if item:
+        complete_item(item_id, int(request.form["rating"]), request.form["review"])
 
-    return redirect(url_for("book_detail", book_id=book_id))
+    return redirect(url_for("item_detail", item_id=item_id))
 
 
-@app.route("/edit/<int:book_id>", methods=["POST"])
-def edit(book_id):
+@app.route("/item/<int:item_id>/edit", methods=["POST"])
+def edit_item_route(item_id):
     if not session.get('user_id') and not session.get('is_admin'):
         return redirect(url_for('login'))
 
-    book = get_book_by_id(book_id)
-    if book:
-        edit_book(book_id, request.form.get("title"), request.form.get("author"), request.form.get("category"))
+    item = get_item_by_id(item_id)
+    if item:
+        edit_item(item_id, request.form.get("title"), request.form.get("creator"), request.form.get("category"))
+        edit_review_date(item_id, request.form.get("date_finished"))
+        flash("Item updated", "success")
 
-    return redirect(url_for("index"))
-
-
-@app.route("/book/<int:book_id>/edit", methods=["POST"])
-def edit_book_route(book_id):
-    if not session.get('user_id') and not session.get('is_admin'):
-        return redirect(url_for('login'))
-
-    book = get_book_by_id(book_id)
-    if book:
-        edit_book(book_id, request.form.get("title"), request.form.get("author"), request.form.get("category"))
-        edit_review_date(book_id, request.form.get("date_finished"))
-        flash("Book updated", "success")
-
-    return redirect(url_for("book_detail", book_id=book_id))
+    return redirect(url_for("item_detail", item_id=item_id))
 
 
 @app.template_filter('datetimeformat')
@@ -258,7 +286,6 @@ def register():
         if len(password) < 6:
             return render_template("register.html", error="Password must be at least 6 characters")
 
-        # Hash hasła
         password_hash = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
 
         try:
@@ -275,29 +302,27 @@ def register():
     return render_template("register.html")
 
 
-# === LOGIN (z adminem + zwykłymi userami) ===
+# === LOGIN ===
 @app.route("/login", methods=["GET", "POST"])
 def login():
     if session.get('user_id') or session.get('is_admin'):
-        return redirect(url_for("index"))
+        return redirect(url_for("home"))
 
     if request.method == "GET":
-        session["pre_login_url"] = request.referrer or url_for("index")
-        if session["pre_login_url"].endswith("/login") or session["pre_login_url"].endswith("/register"):
-            session["pre_login_url"] = url_for("index")
+        session["pre_login_url"] = request.referrer or url_for("home")
+        if session["pre_login_url"].endswith(("/login", "/register")):
+            session["pre_login_url"] = url_for("home")
 
     if request.method == "POST":
         username = request.form.get("username", "").strip()
         password = request.form.get("password", "")
 
-        # Najpierw sprawdź czy to admin
         if username == ADMIN_USERNAME and bcrypt.checkpw(password.encode('utf-8'), ADMIN_PASSWORD_HASH):
             session.permanent = True
             session["is_admin"] = True
             flash("Welcome admin!", "success")
-            return redirect(session.pop("pre_login_url", url_for("index")))
+            return redirect(session.pop("pre_login_url", url_for("home")))
 
-        # Jeśli nie admin, sprawdź zwykłych użytkowników
         try:
             rs = client.execute("SELECT id, password_hash FROM users WHERE username = ?", (username,))
             user = row_to_dict(rs)
@@ -307,7 +332,7 @@ def login():
                 session["user_id"] = user['id']
                 session["username"] = username
                 flash(f"Welcome back, {username}!", "success")
-                return redirect(session.pop("pre_login_url", url_for("index")))
+                return redirect(session.pop("pre_login_url", url_for("home")))
             else:
                 return render_template("login.html", error="Invalid credentials")
         except Exception as e:
@@ -331,17 +356,17 @@ def logout():
     return redirect(url_for("home"))
 
 
-@app.route("/init_books_db", methods=["POST"])
-def init_books_db():
+@app.route("/init_db", methods=["POST"])
+def init_db():
     if not session.get("is_admin"):
         flash("Admin access required", "danger")
-        return redirect(url_for("index"))
+        return redirect(url_for("home"))
 
     if initialize_database():
         flash("Database initialized!", "success")
     else:
         flash("Init failed.", "danger")
-    return redirect(url_for("index"))
+    return redirect(url_for("home"))
 
 
 @app.route("/search")

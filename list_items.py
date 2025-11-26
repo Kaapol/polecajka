@@ -2,26 +2,25 @@ import pandas as pd
 from tabulate import tabulate
 from db_init import client
 
-def list_books(show=True):
+def list_items(show=True):
     conn = client
     if not conn:
         if show:
-            print("❌ Błąd połączenia w list_books.")
+            print("Couldn't connect with list_items.")
         return 0
 
     try:
-        # pandas.read_sql_query działa idealnie z obiektem połączenia
-        df = pd.read_sql_query("SELECT * FROM books", conn)
+        df = pd.read_sql_query("SELECT * FROM items", conn)
     except Exception as e:
-        print(f"Błąd odczytu bazy przez pandas: {e}")
+        print(f"Error in reading db via pandas: {e}")
         return 0
     finally:
         if conn:
-            conn.close() # Zawsze zamykaj połączenie
+            conn.close()
 
     if df.empty:
         if show:
-            print(f"❌ Nie znaleziono żadnych książek.")
+            print(f"Couldn't find any items.")
         return 0
 
     if show:
@@ -30,4 +29,4 @@ def list_books(show=True):
     return len(df)
 
 if __name__ == "__main__":
-    list_books()
+    list_items()

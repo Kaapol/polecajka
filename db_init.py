@@ -12,7 +12,7 @@ if DB_URL and DB_TOKEN:
     try:
         url_https = DB_URL.replace("libsql://", "https://")
 
-        #klucz synchroniczny z https
+        # klucz synchroniczny z https
         client = libsql_client.create_client_sync(
             url=url_https,
             auth_token=DB_TOKEN
@@ -21,14 +21,13 @@ if DB_URL and DB_TOKEN:
     except Exception as e:
         print(f"❌ Błąd połączenia z Turso: {e}")
         import traceback
-
         traceback.print_exc()
 else:
     print("⚠️  OSTRZEŻENIE: Brak zmiennych TURSO. Baza nie zadziała.")
 
 
 def is_database_initialized(client):
-    """Sprawdzaj czy istnieje tabela 'books' (marker inicjalizacji)"""
+    """Sprawdzaj czy istnieje tabela 'items' (marker inicjalizacji)"""
     if not client:
         return False
 
@@ -36,7 +35,7 @@ def is_database_initialized(client):
         # Jeśli istnieje ta tabela, to DB jest zainicjalizowana
         rs = client.execute("""
             SELECT name FROM sqlite_master 
-            WHERE type='table' AND name='books'
+            WHERE type='table' AND name='items'
         """)
         tables = rs_to_dicts(rs)
         db_init = len(tables) > 0
@@ -45,6 +44,7 @@ def is_database_initialized(client):
     except Exception as e:
         print(f"Error checking database: {e}")
         return False
+
 
 def get_client():
     """Zwraca JEDYNEGO klienta bazy."""
@@ -105,13 +105,14 @@ def initialize_database():
         """)
 
         client.execute("""
-            CREATE TABLE IF NOT EXISTS books (
+            CREATE TABLE IF NOT EXISTS items (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 user_id INTEGER NOT NULL,
+                type TEXT NOT NULL,
                 title TEXT NOT NULL,
-                author TEXT,
+                creator TEXT,
                 category TEXT,
-                status TEXT DEFAULT 'To Read',
+                status TEXT DEFAULT 'To Complete',
                 date_added TEXT,
                 thumbnail TEXT,
                 FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
@@ -121,11 +122,11 @@ def initialize_database():
         client.execute("""
             CREATE TABLE IF NOT EXISTS reviews (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
-                book_id INTEGER,
+                item_id INTEGER,
                 rating INTEGER,
                 review TEXT,
                 date_finished TEXT,
-                FOREIGN KEY(book_id) REFERENCES books(id) ON DELETE CASCADE
+                FOREIGN KEY(item_id) REFERENCES items(id) ON DELETE CASCADE
             )
         """)
 
@@ -140,7 +141,6 @@ def initialize_database():
         import traceback
         traceback.print_exc()
         return False
-
 
 
 if __name__ == "__main__":
