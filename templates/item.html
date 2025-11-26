@@ -1,0 +1,147 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="item-container">
+
+    <!-- GÓRNA SEKCJA GRID (KARTA + EDYCJA) -->
+    <div class="top-section-grid">
+
+        <!-- 1. KARTA ITEM'U (INFORMACJE) -->
+        <div class="item-card">
+            <h1 class="item-title">{{ item['title'] }}</h1>
+
+            <div class="item-details-main">
+
+                {% if item['thumbnail'] %}
+                    <img src="{{ item['thumbnail'] | safe }}" alt="Item cover" class="item-cover-image">
+                {% endif %}
+
+                <div class="item-metadata-wrapper">
+                    <div class="details-grid">
+                        <p class="item-meta"><strong>Creator:</strong> {{ item['creator'] }}</p>
+                        <p class="item-meta"><strong>Category:</strong> {{ item['category'] }}</p>
+                        <p class="item-meta"><strong>Added:</strong> {{ item['date_added'] }}</p>
+                        <p class="item-meta"><strong>Status:</strong> {{ item['status'] }}</p>
+
+                        {% if item['status'] == 'Completed' %}
+                        <p class="item-meta finished"><strong>Completed:</strong> {{ item['date_finished'] }}</p>
+                        {% endif %}
+
+                        {% if item['rating'] %}
+                        <p class="item-meta rating">
+                            <strong>Rating:</strong> ⭐ {{ item['rating'] }}/10
+
+                            {% if item['review'] %}
+                            - <span class="review-button" onclick="openReviewModal(event)">📖 Review</span>
+                            {% endif %}
+                        </p>
+                        {% endif %}
+
+                        <div id="reviewModal" class="modal">
+                            <div class="modal-content">
+                                <span class="close" onclick="closeReviewModal()">&times;</span>
+                                <h3>📖 Your Review</h3>
+                                <p>"{{ item['review'] }}"</p>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+                </div>
+            </div>
+
+        <!-- 2. KARTA EDYCJI -->
+        <div class="card edit-card">
+            <h3>✏️ Edit Details</h3>
+            <form action="{{ url_for('edit_item_route', item_id=item['id']) }}" method="POST" class="form">
+                <input type="text" name="title" value="{{ item['title'] }}" placeholder="Title">
+                <input type="text" name="creator" value="{{ item['creator'] }}" placeholder="Creator">
+                <input type="text" name="category" value="{{ item['category'] }}" placeholder="Category">
+
+                {% if item['status'] == 'Completed' %}
+                <div class="date-field-group">
+                    <label for="date_finished" class="input-label">Completed:</label>
+                    <input type="date" name="date_finished" id="date_finished"
+                               value="{{ item['date_finished']|datetimeformat }}"
+                               title="Date when you finished"
+                               aria-label="Date Completed">
+                </div>
+                {% endif %}
+
+                <button type="submit" class="btn-primary">💾 Save Changes</button>
+            </form>
+        </div>
+
+    </div>
+
+
+    <!-- 3. KARTA RECENZJI -->
+    <div class="card review-card">
+        <h3>⭐ {% if item['rating'] %}Edit {% else %}Add{% endif %} Review</h3>
+        <form action="{{ url_for('complete_item_route', item_id=item['id']) }}" method="POST" class="form">
+            <input type="number" name="rating" min="1" max="10"
+                   value="{{ item['rating'] or '' }}"
+                   placeholder="Rating (1–10)" required>
+            <textarea name="review" placeholder="Your review..." rows="5" class="resizable-textarea">{{ item['review'] or '' }}</textarea>
+            <button type="submit" class="btn-secondary">
+                {% if item['rating'] %}💾 Update Review{% else %}⭐ Submit Review{% endif %}
+            </button>
+        </form>
+    </div>
+
+
+
+
+    <!-- 4. STOPKA AKCJI (LINK + DANGER ZONE) -->
+    <div class="action-footer">
+
+        <a href="{{ url_for(item['type'] + '_list') }}" class="back-link">⬅️ Back to List</a>
+
+        <!-- Strefa niebezpieczeństwa -->
+        <div class="card danger-zone">
+            <h3>⚠️ Danger Zone</h3>
+            <form id="deleteForm" action="{{ url_for('delete_item', item_id=item['id']) }}" method="POST">
+                <button type="button" class="btn-danger" onclick="confirmDelete('{{ item['title'] }}', '{{ item['creator'] }}')">
+                    🗑️ Delete
+                </button>
+            </form>
+        </div>
+
+    </div>
+
+</div>
+
+
+
+
+<script>
+    function confirmDelete(title, creator) {
+        const confirmed = confirm(`Are you sure you want to delete "${title}" by ${creator}`);
+        if (confirmed) {
+            document.getElementById('deleteForm').submit();
+        }
+    }
+
+
+    function openReviewModal(event) {
+    event.preventDefault();
+    document.getElementById('reviewModal').style.display = 'block';
+}
+
+    function closeReviewModal() {
+        document.getElementById('reviewModal').style.display = 'none';
+    }
+
+    // kliknięcie poza modal zamyka popup
+    window.onclick = function(event) {
+        const modal = document.getElementById('reviewModal');
+        if (event.target == modal) {
+            modal.style.display = "none";
+        }
+    }
+
+</script>
+
+
+{% endblock %}

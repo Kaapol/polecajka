@@ -79,7 +79,7 @@ nav {
 .nav-links a {
   color: #333;
   text-decoration: none;
-  font-size: 1rem; /* Dodane dla spójności */
+  font-size: 1rem;
   font-weight: 500;
   position: relative;
   transition: color 0.25s, transform 0.25s;
@@ -118,7 +118,7 @@ nav {
 .subtitle {
   color: var(--color-text-light);
   margin-bottom: 40px;
-  font-size: 1.1rem; /* Dodane dla spójności */
+  font-size: 1.1rem;
 }
 .categories {
   display: grid;
@@ -140,7 +140,7 @@ nav {
   box-shadow: 0 6px 15px rgba(0, 0, 0, 0.12);
 }
 .category-card h2 {
-  margin: 0 0 10px; /* Uporządkowane marginesy */
+  margin: 0 0 10px;
   color: #111;
 }
 .category-card p {
@@ -176,7 +176,7 @@ tr:hover {
   background: #f9f9f9;
 }
 
-/* === OGÓLNE STYLe DLA FORMULARZY (DOTYCZĄCE TEŻ TABLE-FILTER) === */
+/* === OGÓLNE STYLe DLA FORMULARZY === */
 form {
   display: flex;
   gap: 10px;
@@ -260,8 +260,6 @@ button:hover {
   margin-bottom: 20px;
 }
 
-/* === WŁASNE CHECKBOXY=== */
-
 .search-controls-wrapper {
     padding-top: 10px;
 }
@@ -307,21 +305,20 @@ button:hover {
   border-color: var(--color-primary);
 }
 
-
 /* === RATING SLIDER === */
 .rating-slider-container {
   display: flex;
   flex-direction: column;
   gap: 8px;
   width: 220px;
-  padding-bottom: 20px; /* Zapewnienie miejsca na cyfry 0-10 */
+  padding-bottom: 20px;
 }
 .slider-wrapper {
   position: relative;
   height: 5px;
   background: #ddd;
   border-radius: 5px;
-  padding: 0 8px; /* Odstęp od krawędzi */
+  padding: 0 8px;
 }
 .slider-wrapper input[type="range"] {
   position: absolute;
@@ -341,7 +338,7 @@ input[type="range"]::-webkit-slider-thumb {
   cursor: pointer;
   pointer-events: all;
   box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-  margin: 0; /* Usuwamy marginesy */
+  margin: 0;
   transition: background 0.2s, box-shadow 0.2s;
 }
 input[type="range"]::-webkit-slider-thumb:hover {
@@ -361,11 +358,11 @@ input[type="range"]::-webkit-slider-thumb:hover {
 }
 
 /* ======================================================================
-   5. SEKCJA SZCZEGÓŁÓW KSIĄŻKI (.book-container)
+   5. SEKCJA SZCZEGÓŁÓW ITEM'U (.item-container)
    ====================================================================== */
 
-/* === KONTENER STRONY KSIĄŻKI === */
-.book-container {
+/* === KONTENER STRONY ITEM'U === */
+.item-container {
     display: flex;
     flex-direction: column;
     gap: 20px;
@@ -404,53 +401,46 @@ input[type="range"]::-webkit-slider-thumb:hover {
     color: #333;
 }
 
-/* === KARTA INFORMACYJNA (BOOK CARD) === */
-.book-card {
+/* === KARTA INFORMACYJNA (ITEM CARD) === */
+.item-card {
     padding: 30px;
-    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08); /* Utrzymujemy niższy cień dla głównej karty */
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
     text-align: left;
     height: 100%;
 }
-.book-card:hover {
-    /* Nadpisanie transform w sekcji .card */
+.item-card:hover {
     transform: none;
     box-shadow: 0 5px 12px rgba(0,0,0,0.15);
 }
 
-.book-details-main {
+.item-details-main {
     display: flex;
-    /* Używamy flexbox, aby okładka (lewo) i metadane (prawo) były obok siebie */
     gap: 30px;
-    align-items: flex-start; /* Okładka i tekst wyrównane do góry */
+    align-items: flex-start;
     width: 100%;
 }
 
-.book-cover-image {
-    /* Ustawienie rozmiaru okładki, dostosuj wg uznania */
+.item-cover-image {
     width: auto;
     height: 200px;
-    flex-shrink: 0; /* Zapobiega zmniejszaniu się obrazka */
+    flex-shrink: 0;
     border-radius: 6px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    order: 2; /* Ustawia okładkę na początku */
+    order: 2;
 }
 
-.book-metadata-wrapper {
-    /* Pozwala metadanym zająć resztę dostępnego miejsca */
+.item-metadata-wrapper {
     flex-grow: 1;
-    order: 1; /* Ustawia metadane na drugim miejscu */
+    order: 1;
 }
 
-/* Dostosowanie nagłówka dla lepszego wyglądu przy nowym układzie */
-.book-title {
-    /* W nowym układzie, gdzie okładka jest obok, tytuł powinien być wyrównany do lewej lub wyśrodkowany na szerokości całego .book-card, ale nie zakłócać .book-details-main */
-    text-align: left; /* Zmieniamy na lewo, żeby pasowało do tekstu */
+.item-title {
+    text-align: left;
     padding-bottom: 5px;
     margin-bottom: 20px;
     font-size: 2.2rem;
 }
 
-/* Układ Grid dla metadanych */
 .details-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -458,30 +448,37 @@ input[type="range"]::-webkit-slider-thumb:hover {
     margin-bottom: 20px;
 }
 
-.book-meta {
+.item-meta {
     color: #444;
     font-size: 1rem;
     margin: 0;
 }
-.book-meta strong {
+.item-meta strong {
     color: #222;
     font-weight: 600;
 }
 
-/* Stylizacja wyświetlanej recenzji */
-.book-review {
+.item-meta.finished {
+    color: #27ae60;
+}
+
+.item-meta.rating {
+    color: #f39c12;
+}
+
+.item-review {
     margin-top: 20px;
     padding: 15px;
     border-top: 1px solid #eee;
     background: #fdfdfd;
     border-radius: 8px;
 }
-.book-review h3 {
+.item-review h3 {
     font-size: 1.2rem;
     color: var(--color-primary);
     margin-bottom: 10px;
 }
-.book-review p {
+.item-review p {
     font-style: italic;
     color: #555;
     line-height: 1.6;
@@ -489,11 +486,11 @@ input[type="range"]::-webkit-slider-thumb:hover {
 
 .review-button {
     cursor: pointer;
-    color: #00b3ad; /* pasujący do logo */
+    color: #00b3ad;
     font-weight: 500;
     margin-left: 8px;
     transition: color 0.25s, transform 0.2s;
-    text-decoration: none; /* usuwa podkreślenie */
+    text-decoration: none;
 }
 
 .review-button:hover {
@@ -501,11 +498,9 @@ input[type="range"]::-webkit-slider-thumb:hover {
     transform: translateY(-2px);
 }
 
-
-
 /* === MODAL === */
 .modal {
-    display: none; /* hidden by default */
+    display: none;
     position: fixed;
     z-index: 100;
     left: 0;
@@ -539,20 +534,6 @@ input[type="range"]::-webkit-slider-thumb:hover {
     color: #00b3ad;
 }
 
-/* optional: fade-in animation */
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(-10px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-
-
-/* === KARTA EDYCJI (EDIT CARD) === */
-/* ======================================================================
-   5. SEKCJA SZCZEGÓŁÓW KSIĄŻKI (.book-container)
-   ====================================================================== */
-
-/* ... (istniejący kod z sekcji 5) ... */
-
 /* === KARTA EDYCJI (EDIT CARD) === */
 .edit-card {
     height: 100%;
@@ -564,45 +545,37 @@ input[type="range"]::-webkit-slider-thumb:hover {
     gap: 0;
 }
 
-/* --- NOWY STYL DLA ETYKIETY DATY I INPUTU --- */
 .date-field-group {
-    /* Ustawienie kontenera jako Flexbox dla układu w rzędzie */
     display: flex;
-    align-items: center; /* Wyśrodkowanie w pionie */
-    justify-content: space-between; /* Rozłożenie na całą szerokość */
+    align-items: center;
+    justify-content: space-between;
     width: 100%;
-    /* Odstępy, by pasowały do reszty inputów */
     margin: 5px 0 10px;
 }
 
 .date-field-group .input-label {
-    /* Upewnienie się, że etykieta ma odpowiedni rozmiar tekstu */
     font-size: 0.95rem;
-    color: var(--color-text-dark); /* Upewnienie się, że kolor jest widoczny */
-    margin: 0; /* Usuń ewentualne marginesy */
-    flex-shrink: 0; /* Zapobiega zmniejszaniu się tekstu */
-    padding-right: 15px; /* Dodatkowy odstęp między tekstem a inputem */
+    color: var(--color-text-dark);
+    margin: 0;
+    flex-shrink: 0;
+    padding-right: 15px;
     font-weight: 500;
 }
 
 .date-field-group input[type="date"] {
-    /* Nadpisanie domyślnego 100% szerokości inputów w formularzu */
     width: auto;
-    flex-grow: 1; /* Pozwoli inputowi zająć pozostałą przestrzeń, ale nie wymusi 100% */
-    margin: 0; /* Usuwamy domyślne marginesy inputów z sekcji .form input */
+    flex-grow: 1;
+    margin: 0;
 }
 
-/* Upewnienie się, że inputy tekstowe też mają margines pod sobą */
 .form input[type="text"] {
     margin: 5px 0 10px;
 }
-/* ---------------------------------------------------- */
 
 /* === KARTA RECENZJI (REVIEW CARD) === */
 .review-card {
     width: 100%;
 }
-
 
 /* === STYLIZACJA ELEMENTÓW FORMULARZA W KARTACH === */
 .form input, .form textarea {
@@ -634,7 +607,6 @@ input[type="range"]::-webkit-slider-thumb:hover {
     color: white;
     cursor: pointer;
     transition: transform 0.1s, opacity 0.2s;
-    /* Resetowanie stylu ogólnego przycisku */
     font-weight: 500;
     margin-top: 5px;
 }
@@ -658,7 +630,6 @@ input[type="range"]::-webkit-slider-thumb:hover {
    6. STOPKA AKCJI I FOOTER
    ====================================================================== */
 
-/* === STOPKA AKCJI (LINK WSTECZ + DANGER ZONE) === */
 .action-footer {
     max-width: 1200px;
     width: 100%;
@@ -666,7 +637,7 @@ input[type="range"]::-webkit-slider-thumb:hover {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 20px 40px 10px; /* Używamy 40px jak padding głównej sekcji */
+    padding: 20px 40px 10px;
     border-top: 1px solid #eee;
 }
 
@@ -683,14 +654,13 @@ input[type="range"]::-webkit-slider-thumb:hover {
     text-decoration: underline;
 }
 
-/* === DANGER ZONE CARD (W STOPCE) */
 .danger-zone {
     border: 1px solid #f4433644;
     background: #fff8f8;
     padding: 15px 20px;
     box-shadow: none;
     height: auto;
-    border-radius: 12px; /* Zapewnienie zaokrąglenia */
+    border-radius: 12px;
 }
 
 .danger-zone h3 {
@@ -710,7 +680,7 @@ input[type="range"]::-webkit-slider-thumb:hover {
 
 /* === FOOTER (OGÓLNY) === */
 footer {
-    position: relative; /* dodajemy */
+    position: relative;
     text-align: center;
     padding: 15px;
     font-size: 0.85rem;
@@ -720,17 +690,15 @@ footer {
     backdrop-filter: blur(10px);
 }
 
-
 #google_translate_wrapper {
     position: absolute;
     left: 5px;
     bottom: 5px;
     z-index: 5;
-    transform: scale(0.8); /* zmniejszenie całości */
-    transform-origin: left bottom; /* skaluje od lewego dolnego rogu */
+    transform: scale(0.8);
+    transform-origin: left bottom;
 }
 
-/* Dodatkowo wymusz kolor na select */
 #google_translate_wrapper select {
     background: var(--color-card-bg) !important;
     color: var(--color-text-dark) !important;
@@ -739,13 +707,9 @@ footer {
     padding: 5px 8px !important;
 }
 
-/* Jeśli iframe (tło widgetu) wychodzi poza footer */
 .goog-te-banner-frame.skiptranslate {
-    display: none !important; /* ukrywa pasek Google Translate na górze */
+    display: none !important;
 }
-
-
-
 
 /* ======================================================================
    7. LOGIN
@@ -778,8 +742,6 @@ footer {
     width: 100%;
     box-sizing: border-box;
 }
-
-
 
 .login-container h2 {
     margin-bottom: 1.5rem;
@@ -846,14 +808,11 @@ footer {
     outline-offset: 2px;
 }
 
-
-
 .error {
     margin-top: 1rem;
     color: var(--color-danger);
     font-size: 0.9rem;
 }
-
 
 .auth-link {
     margin-left: 1rem;
@@ -872,8 +831,6 @@ footer {
 .auth-link:hover {
     opacity: 0.8;
 }
-
-
 
 .flash-container {
     position: fixed;
@@ -898,13 +855,11 @@ footer {
     min-width: 220px;
 }
 
-/* typy wiadomości */
 .flash.success { background-color: #38a169; }
 .flash.info    { background-color: #3182ce; }
 .flash.warning { background-color: #dd6b20; }
 .flash.danger  { background-color: #e53e3e; }
 
-/* animacja wejścia + zanikania */
 @keyframes slideFade {
     0% { opacity: 0; transform: translate(-50%, -15px); }
     10% { opacity: 1; transform: translate(-50%, 0); }
@@ -912,16 +867,12 @@ footer {
     100% { opacity: 0; transform: translate(-50%, -20px); }
 }
 
+/* ======================================================================
+   8. DARK MODE
+   ====================================================================== */
 
-/** ===============================
-            DARK MODE
-================================= */
-
-/* -------------------------
-   Zmienne kolorów
--------------------------- */
 body.dark-mode {
-  --color-primary: #00b3ad;         /* Zachowanie spójności z Light Mode dla akcentu */
+  --color-primary: #00b3ad;
   --color-primary-dark: #009a94;
   --color-text-dark: #eee;
   --color-text-light: #bbb;
@@ -930,9 +881,6 @@ body.dark-mode {
   --color-border-light: rgba(255, 255, 255, 0.1);
 }
 
-/* -------------------------
-   Główne tło i kolory tekstu
--------------------------- */
 body.dark-mode body,
 body.dark-mode nav,
 body.dark-mode footer {
@@ -940,14 +888,12 @@ body.dark-mode footer {
   color: var(--color-text-dark);
 }
 
-/* Nav i footer - półprzezroczyste tło z borderem */
 body.dark-mode nav,
 body.dark-mode footer {
   background: rgba(30, 30, 30, 0.8);
   border-color: var(--color-border-light);
 }
 
-/* Karty, formularze, tabela */
 body.dark-mode .category-card,
 body.dark-mode .card,
 body.dark-mode .login-container,
@@ -957,7 +903,6 @@ body.dark-mode table {
   border-color: var(--color-border-light);
 }
 
-/* Tabela - nagłówki i hover */
 body.dark-mode th {
   background: #222;
 }
@@ -966,9 +911,6 @@ body.dark-mode tr:hover {
   background: #1a1a1a;
 }
 
-/* -------------------------
-   Tekst nagłówków i ważny tekst
--------------------------- */
 body.dark-mode h1,
 body.dark-mode h2,
 body.dark-mode h3,
@@ -976,23 +918,19 @@ body.dark-mode a,
 body.dark-mode label,
 body.dark-mode strong,
 body.dark-mode .site-title,
-body.dark-mode .book-title,
+body.dark-mode .item-title,
 body.dark-mode .card h3 {
-  color: var(--color-text-dark); /* jasny kolor */
+  color: var(--color-text-dark);
 }
 
-/* Tekst mniej kontrastowy / akapity */
 body.dark-mode p,
 body.dark-mode .subtitle,
 body.dark-mode .category-card p,
-body.dark-mode .book-meta,
-body.dark-mode .book-review p {
-  color: var(--color-text-light); /* jasnoszary */
+body.dark-mode .item-meta,
+body.dark-mode .item-review p {
+  color: var(--color-text-light);
 }
 
-/* -------------------------
-   Inputy, selecty, textarea
--------------------------- */
 body.dark-mode input,
 body.dark-mode select,
 body.dark-mode .modal-content,
@@ -1002,21 +940,16 @@ body.dark-mode textarea {
   color: var(--color-text-dark);
 }
 
-/* -------------------------
-   Toggle Dark Mode - ikony
-   Dark mode ON → pokazujemy słońce
-   Light mode ON → pokazujemy księżyc
--------------------------- */
 #dark-toggle {
     position: absolute;
-    right: 15px; /* odstęp od prawej krawędzi */
-    bottom: 15px; /* odstęp od dolnej krawędzi */
+    right: 15px;
+    bottom: 15px;
   cursor: pointer;
   width: 36px;
   height: 36px;
   transition: transform 0.2s, color 0.2s;
     padding-top: 15px;
-  color: #ffcc00; /* domyślny kolor */
+  color: #ffcc00;
 }
 
 #dark-toggle:hover {
@@ -1024,7 +957,6 @@ body.dark-mode textarea {
     color: #ffd633;
 }
 
-/* Light mode - pokazujemy księżyc, ukrywamy słońce */
 body:not(.dark-mode) .moon-icon {
   display: inline;
 }
@@ -1032,7 +964,6 @@ body:not(.dark-mode) .sun-icon {
   display: none;
 }
 
-/* Dark mode - pokazujemy słońce, ukrywamy księżyc */
 body.dark-mode .sun-icon {
   display: inline;
 }
@@ -1040,43 +971,25 @@ body.dark-mode .moon-icon {
   display: none;
 }
 
-
-
-
-
 /* ======================================================================
-   8. RESPONSIVE
-   ====================================================================== */
-/* ======================================================================
-   8. RESPONSIVE - POPRAWIONE
+   9. RESPONSIVE
    ====================================================================== */
 @media (max-width: 900px) {
-    /* Na mniejszych ekranach (poniżej 900px) siatka przechodzi na jedną kolumnę */
     .top-section-grid {
-        /* Przejście z 2 kolumn na 1, np. z karty informacji i karty edycji */
         grid-template-columns: 1fr;
         gap: 20px;
     }
-
-    /* Usunięto nadpisanie paddingu stopki akcji z tej sekcji.
-       Pozwalamy, by reguła poniżej 800px przejęła kontrolę nad układem stopki,
-       lub domyślny padding stopki (40px) zadziałał do 800px.
-    */
 }
 
----
-
 @media (max-width: 800px) {
-    /* Zmniejszenie paddingów głównej treści */
     main {
         padding: 20px;
     }
-    .book-container {
+    .item-container {
         padding: 5px 5px;
         gap: 20px;
     }
 
-    /* Zmiana układu i paddingu paska nawigacyjnego */
     nav {
         flex-direction: column;
         gap: 10px;
@@ -1086,30 +999,24 @@ body.dark-mode .moon-icon {
         gap: 15px;
     }
 
-    /* Zmniejszenie nagłówków */
     .site-title {
         font-size: 2.2rem;
     }
-    .book-title {
+    .item-title {
         font-size: 2rem;
     }
 
-    /* Stopka na małych telefonach */
     .action-footer {
-        /* Układ pionowy z wyśrodkowaniem */
         flex-direction: column;
         gap: 15px;
         align-items: center;
         text-align: center;
-        /* Nowy, mniejszy padding */
         padding: 10px 20px;
     }
     .back-link {
-        /* Link Wstecz na dole */
         order: 2;
     }
     .danger-zone {
-        /* Danger Zone na górze i pełna szerokość */
         order: 1;
         width: 100%;
         text-align: center;
